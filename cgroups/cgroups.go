@@ -41,21 +41,21 @@ func Run()  {
 	}
 
 	fmt.Printf("%v\n", cmd.Process.Pid)
-	if err = os.Mkdir(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit"), 0755); err != nil {
+	if err := os.Mkdir(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit"), 0755); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	if err = ioutil.WriteFile(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit", "tasks"), []byte(strconv.Itoa(cmd.Process.Pid)), 0644); err != nil {
+	if err := ioutil.WriteFile(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit", "tasks"), []byte(strconv.Itoa(cmd.Process.Pid)), 0644); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	if err = ioutil.WriteFile(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit", "memory.limit_in_bytes"), []byte("100m"), 0644); err != nil {
+	if err := ioutil.WriteFile(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit", "memory.limit_in_bytes"), []byte("100m"), 0644); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if _, err = cmd.Process.Wait(); err != nil {
+	if _, err := cmd.Process.Wait(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
