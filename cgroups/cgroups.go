@@ -51,7 +51,7 @@ func Run()  {
 		os.Exit(1)
 	}
 
-	if err := ioutil.WriteFile(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit", "memory.limit_in_bytes"), []byte("100m"), 0644); err != nil {
+	if err := ioutil.WriteFile(path.Join(cgroupMemoryHierarchyMount, "testmemorylimit", "memory.limit_in_bytes"), []byte(strconv.Itoa(1024 * 1024 * 100)), 0644); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
