@@ -15,7 +15,7 @@ const cgroupMemoryHierarchyMount  = "/sys/fs/cgroup/memory"
 func Run()  {
 	if os.Args[0] == "/proc/self/exe" {
 		fmt.Printf("current pid %d\n", syscall.Getpid())
-		cmd := exec.Command("stress --vm-bytes 200m --vm-keep -m 1")
+		cmd := exec.Command("sh", "-c", `stress --vm-bytes 200m --vm-keep -m 1`)
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
 
 		cmd.Stdin = os.Stdin
@@ -27,9 +27,24 @@ func Run()  {
 		}
 	}
 
-	cmd := exec.Command("/proc/self/exe")
+	cmd := exec.Command("sh")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWNET | syscall.CLONE_NEWNS | syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS,
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER | syscall.CLONE_NEWNET,
+		// 映射
+		UidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 1234,
+				HostID: 0,
+				Size: 1,
+			},
+		},
+		GidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 1234,
+				HostID: 0,
+				Size: 1,
+			},
+		},
 	}
 
 	cmd.Stdin = os.Stdin
