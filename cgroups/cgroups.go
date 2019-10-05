@@ -27,7 +27,7 @@ func Run()  {
 		}
 	}
 
-	cmd := exec.Command("stress --vm-bytes 200m --vm-keep -m 1")
+	cmd := exec.Command("/proc/self/exe")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWNET | syscall.CLONE_NEWNS | syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS,
 	}

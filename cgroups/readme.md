@@ -84,8 +84,13 @@ $ cd /sys/fs/cgroup/memory #通过前面的命令发现memory这个subsystem挂�
 $ mkdir test-limit-memory && cd test-limit-memory
 $ sudo sh -c "echo \"100m\" > memory.limit_in_bytes"
 $ sudo sh -c "echo $$ > tasks"
+
 $ stress --vm-bytes 200m --vm-keep -m 1
 $ top # 本机内存8G, 现在内存占用1.3%, 正好少了一半
+
+#杀死被挂载的进程, 就可以umount
+$  sudo umount /home/johnny/go_workspace/src/github.com/johnnylei/my_docker/cgroup-test
+# umount 完成以后,就可以删除cgoup-test文件夹
 ```
 
 ## docker是如何使用cgroups
@@ -110,4 +115,12 @@ Linux 内核提供了一种通过 /proc 文件系统，在运行时访问内核�
 读取/proc/self/maps可以得到当前进程的内存映射关系，通过读该文件的内容可以得到内存代码段基址。
 
 /proc/self/mem是进程的内存内容，通过修改该文件相当于直接修改当前进程的内存
+
+
+## 扩展阅读2
+[cgroups - Linux control groups](http://www.man7.org/linux/man-pages/man7/cgroups.7.html)
+
+[关于虚拟机的博客](https://segmentfault.com/u/wuyangchun)
+
+[创建并管理cgroup](https://segmentfault.com/a/1190000007241437)
 
