@@ -27,7 +27,7 @@ func Run()  {
 		}
 	}
 
-	cmd := exec.Command("sh")
+	cmd := exec.Command("/proc/self/exe")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
 	}
@@ -35,7 +35,7 @@ func Run()  {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Start(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
