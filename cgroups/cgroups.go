@@ -29,22 +29,7 @@ func Run()  {
 
 	cmd := exec.Command("sh")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER | syscall.CLONE_NEWNET,
-		// 映射
-		UidMappings: []syscall.SysProcIDMap{
-			{
-				ContainerID: 1234,
-				HostID: 0,
-				Size: 1,
-			},
-		},
-		GidMappings: []syscall.SysProcIDMap{
-			{
-				ContainerID: 1234,
-				HostID: 0,
-				Size: 1,
-			},
-		},
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
 	}
 
 	cmd.Stdin = os.Stdin
