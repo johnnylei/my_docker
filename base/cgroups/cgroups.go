@@ -27,6 +27,9 @@ func Run()  {
 		}
 	}
 
+	/**
+	/pro/self/exe fork出一个自身进程, 相当与开一个进程,把自身再执行一遍
+	 */
 	cmd := exec.Command("/proc/self/exe")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,

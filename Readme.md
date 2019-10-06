@@ -25,3 +25,22 @@ $ update-grub
 $ reboot
 $ uname -r
 ```
+
+### kernel降级以后一个docker问题
+降级后发现docker ps 错误了
+```cassandraql
+$ docker ps
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+$ service docker status # docker是运行的
+docker start/running, process 26524
+
+# 查看错误日志
+$ tail -f /var/log/upstart/docker.log
+/var/run/docker.sock is up
+time="2019-10-05T23:54:42.714599727+08:00" level=info msg="libcontainerd: new containerd process, pid: 20285" 
+time="2019-10-05T23:54:43.721743867+08:00" level=error msg="'overlay' not found as a supported filesystem on this host. Please ensure kernel is new enough and has overlay support loaded." 
+time="2019-10-05T23:54:43.722175526+08:00" level=error msg="[graphdriver] prior storage driver overlay2 failed: driver not supported" 
+Error starting daemon: error initializing graphdriver: driver not supported
+
+```
+没搞定
