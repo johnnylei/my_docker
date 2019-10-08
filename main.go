@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/johnnylei/my_docker/subsystem"
 	"github.com/urfave/cli"
 	"log"
 	"os"
@@ -18,6 +19,15 @@ func main() {
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name: "ti",
+				},
+				cli.Int64Flag{
+					Name: "m",
+				},
+				cli.StringFlag{
+					Name: "cpuset",
+				},
+				cli.StringFlag{
+					Name: "cpushare",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -39,6 +49,23 @@ func main() {
 				if err := cmd.Start(); err != nil {
 					log.Fatal(err)
 				}
+
+				resourceConfig := &subsystem.ResourceConfig{
+					MemoryLimit: c.Int("m"),
+					CpuSet: c.String("cpuset"),
+					CpuShare: c.String("cpushare"),
+				}
+
+				manager, err := subsystem.InitCgroupsManager("mydocker-cgroup", resourceConfig)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if err := manager.Run(); err != nil {
+					log.Fatal(err)
+				}
+
+				defer manager.Destroy()
 
 				if err := cmd.Wait(); err != nil {
 					log.Fatal(err)
