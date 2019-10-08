@@ -11,11 +11,12 @@
 - USER: CLONE_NEWUSER
 - MOUNT: CLONE_NEWNS
 - NETWORK: CLONE_NEWNET
+- CGROUP: CLONE_NEWCGROUP
 
 ### abstract
-- clone: 在创建新进程的同时创建 namespace
+- clone: 创建一个新的进程并把他放到新的namespace中
 - setns: 通过 setns() 函数可以将当前进程加入到已有的 namespace 中
-- unshare: 通过 unshare 函数可以在原进程上进行 namespace 隔离。也就是创建并加入新的 namespace
+- unshare: 使当前进程退出指定类型的namespace，并加入到新创建的namespace（相当于创建并加入新的namespace）
 
 ```
 ls -l /proc/$$/ns #查看ns信息

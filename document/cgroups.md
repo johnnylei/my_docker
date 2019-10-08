@@ -26,7 +26,8 @@ tasks 里面是一些进程
 
 ```
 $ lssubsys -a
-$ mount
+$ mount|grep cgroup
+$ cat /proc/$$/cgroup #查看当前进程的cgroup信息
 ```
 ### hierarchy
 把一组cgroup串成树装, 这样的树就是hierarchy, 通过这样的树装结构, cgroup可以实现继承,
