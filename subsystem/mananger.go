@@ -50,8 +50,7 @@ type CgroupsManager struct {
 	SubsystemInstances []Subsystem
 }
 
-func (cgroupsManager *CgroupsManager) Run() error  {
-	pid := os.Getpid()
+func (cgroupsManager *CgroupsManager) Run(pid int) error  {
 	for _, subsystem := range cgroupsManager.SubsystemInstances {
 		if err := subsystem.Apply(pid); err != nil {
 			return err
