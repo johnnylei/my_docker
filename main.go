@@ -35,7 +35,12 @@ func main() {
 					return fmt.Errorf("missing container command")
 				}
 
-				cmd := exec.Command("/proc/self/exe init", c.Args()...)
+				args := []string{"init"}
+				for i := 0; i < len(c.Args()); i++ {
+					args = append(args, c.Args().Get(i))
+				}
+
+				cmd := exec.Command("/proc/self/exe", args...)
 				cmd.SysProcAttr = &syscall.SysProcAttr{
 					Cloneflags:syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET,
 				}
