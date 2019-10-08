@@ -20,7 +20,7 @@ func main() {
 				cli.BoolFlag{
 					Name: "ti",
 				},
-				cli.Int64Flag{
+				cli.IntFlag{
 					Name: "m",
 				},
 				cli.StringFlag{
