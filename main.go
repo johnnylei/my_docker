@@ -3,14 +3,33 @@ package main
 import (
 	"fmt"
 	"github.com/johnnylei/my_docker/subsystem"
+	"github.com/johnnylei/my_docker/util"
 	"github.com/urfave/cli"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
 )
+
+//func main() {
+//	var wg sync.WaitGroup
+//	wg.Add(2)
+//	_, write, _ := util.NewPipe()
+//	go func() {
+//		write.WriteString("hello fucker")
+//		wg.Done()
+//	}()
+//
+//	go func() {
+//		buffer := make([]byte, 1024)
+//		reader := os.NewFile(uintptr(3), "pipe")
+//		reader.Read(buffer)
+//		fmt.Println(string(buffer))
+//		wg.Done()
+//	}()
+//	wg.Wait()
+//}
 
 func main() {
 	app := cli.NewApp()
@@ -37,7 +56,7 @@ func main() {
 					return fmt.Errorf("missing container command")
 				}
 
-				read, write, err := NewPipe()
+				read, write, err := util.NewPipe()
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -95,7 +114,8 @@ func main() {
 				}
 
 				read := os.NewFile(uintptr(3), "pipe")
-				message, err := ioutil.ReadAll(read)
+				message := make([]byte, 1024)
+				_, err := read.Read(message)
 				if err != nil {
 					log.Fatal(err)
 				}
