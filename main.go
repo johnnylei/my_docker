@@ -121,7 +121,12 @@ func main() {
 				}
 
 				command := strings.Split(string(message), " ")
-				if err:= syscall.Exec(command[0], command, os.Environ()); err !=nil {
+				path, err := exec.LookPath(command[0])
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
 					log.Fatal(err)
 				}
 				return nil
