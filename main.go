@@ -128,23 +128,21 @@ func main() {
 					return err
 				}
 
-				read := os.NewFile(uintptr(3), "pipe")
-				message := make([]byte, 1024)
-				_, err := read.Read(message)
+				reader := os.NewFile(uintptr(3), "pipe")
+				_, message, err := util.ReadPipe(reader)
 				if err != nil {
 					_, file, line, _ := runtime.Caller(1)
 					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
 					return err
 				}
 
-				command := strings.Split(string(message), " ")
+				command := strings.Split(message, " ")
 				path, err := exec.LookPath(command[0])
 				if err != nil {
 					_, file, line, _ := runtime.Caller(1)
 					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
 					return err
 				}
-				fmt.Printf("command: %s\nfind at: %s\n", command, path)
 
 				if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
 					_, file, line, _ := runtime.Caller(1)
