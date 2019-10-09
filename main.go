@@ -125,6 +125,7 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
+				fmt.Printf("command: %s\nfind at: %s\n", command, path)
 
 				if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
 					log.Fatal(err)
