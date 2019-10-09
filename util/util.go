@@ -27,11 +27,10 @@ func ReadPipe(reader *os.File) (int, string, error) {
 		}
 
 		fmt.Printf("buffer:%s, num:%d\n", string(buffer[0:n - 1]), num)
-		if n == 0 {
+		message = message + string(buffer[0:n - 1])
+		if n < 1024 {
 			break
 		}
-
-		message = message + string(buffer[0:n - 1])
 	}
 
 	return num, message, nil
