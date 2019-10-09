@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/johnnylei/my_docker/subsystem"
 	"github.com/urfave/cli"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 )
 
@@ -35,12 +37,12 @@ func main() {
 					return fmt.Errorf("missing container command")
 				}
 
-				args := []string{"init"}
-				for i := 0; i < len(c.Args()); i++ {
-					args = append(args, c.Args().Get(i))
+				read, write, err := NewPipe()
+				if err != nil {
+					log.Fatal(err)
 				}
 
-				cmd := exec.Command("/proc/self/exe", args...)
+				cmd := exec.Command("/proc/self/exe", "init")
 				cmd.SysProcAttr = &syscall.SysProcAttr{
 					Cloneflags:syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET,
 				}
@@ -51,11 +53,16 @@ func main() {
 					cmd.Stderr = os.Stderr
 				}
 
+				cmd.ExtraFiles = append(cmd.ExtraFiles, read)
+				if _, err := write.WriteString(strings.Join(c.Args(), " ")); err != nil {
+					log.Fatal(err)
+				}
+
 				if err := cmd.Start(); err != nil {
 					log.Fatal(err)
 				}
 
-				resourceConfig := &subsystem.ResourceConfig{
+				resourceConfig := &subsystem.ResourceConfig {
 					MemoryLimit: c.Int("m"),
 					CpuSet: c.String("cpuset"),
 					CpuShare: c.String("cpushare"),
@@ -83,13 +90,18 @@ func main() {
 			Name: "init",
 			Usage: "init for container",
 			Action: func(c *cli.Context) error {
-				command := c.Args().Get(0)
 				if err := syscall.Mount("proc", "/proc", "proc", uintptr(syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NOSUID), ""); err != nil {
 					log.Fatal(err)
 				}
 
-				argv := []string{command}
-				if err:= syscall.Exec(command, argv, os.Environ()); err !=nil {
+				read := os.NewFile(uintptr(3), "pipe")
+				message, err := ioutil.ReadAll(read)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				command := strings.Split(string(message), " ")
+				if err:= syscall.Exec(command[0], command, os.Environ()); err !=nil {
 					log.Fatal(err)
 				}
 				return nil
