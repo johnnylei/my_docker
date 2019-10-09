@@ -1,6 +1,9 @@
 package util
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 func NewPipe() (*os.File, *os.File, error) {
 	read, write, err := os.Pipe()
@@ -23,11 +26,12 @@ func ReadPipe(reader *os.File) (int, string, error) {
 			return num, message, err
 		}
 
+		fmt.Printf("buffer:%s, num:%d\n", string(buffer[0:n - 1]), num)
 		if n == 0 {
 			break
 		}
 
-		message = message + string(buffer[0:n])
+		message = message + string(buffer[0:n - 1])
 	}
 
 	return num, message, nil
