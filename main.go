@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"syscall"
 )
@@ -58,7 +59,9 @@ func main() {
 
 				read, write, err := util.NewPipe()
 				if err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				cmd := exec.Command("/proc/self/exe", "init")
@@ -74,11 +77,15 @@ func main() {
 
 				cmd.ExtraFiles = append(cmd.ExtraFiles, read)
 				if _, err := write.WriteString(strings.Join(c.Args(), " ")); err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				if err := cmd.Start(); err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				resourceConfig := &subsystem.ResourceConfig {
@@ -89,17 +96,23 @@ func main() {
 
 				manager, err := subsystem.InitCgroupsManager("mydocker-cgroup", resourceConfig)
 				if err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				if err := manager.Run(cmd.Process.Pid); err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				defer manager.Destroy()
 
 				if err := cmd.Wait(); err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				return nil
@@ -110,25 +123,33 @@ func main() {
 			Usage: "init for container",
 			Action: func(c *cli.Context) error {
 				if err := syscall.Mount("proc", "/proc", "proc", uintptr(syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NOSUID), ""); err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				read := os.NewFile(uintptr(3), "pipe")
 				message := make([]byte, 1024)
 				_, err := read.Read(message)
 				if err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 
 				command := strings.Split(string(message), " ")
 				path, err := exec.LookPath(command[0])
 				if err != nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 				fmt.Printf("command: %s\nfind at: %s\n", command, path)
 
 				if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
-					log.Fatal(err)
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Printf("file%s, line:%d, err:%s\n", file, line, err.Error())
+					return err
 				}
 				return nil
 			},
