@@ -26,8 +26,8 @@ func ReadPipe(reader *os.File) (int, string, error) {
 			return num, message, err
 		}
 
-		fmt.Printf("buffer:%s, num:%d\n", string(buffer[0:n - 1]), num)
-		message = message + string(buffer[0:n - 1])
+		fmt.Printf("buffer:%s, num:%d\n", string(buffer[0:n]), num)
+		message = message + string(buffer[0:n])
 		if n < 1024 {
 			break
 		}
