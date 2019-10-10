@@ -22,7 +22,7 @@ func InitCgroupsManager(relatePath string, resourceConfig *ResourceConfig) (*Cgr
 		return nil, fmt.Errorf("relate path or resource config should not be empty")
 	}
 
-	instances := []Subsystem{}
+	instances := []SubsystemInterface{}
 	if resourceConfig.MemoryLimit > 0 {
 		memorySubsystem, err := InitMemorySubsystem(relatePath, resourceConfig)
 		if err != nil {
@@ -41,13 +41,22 @@ func InitCgroupsManager(relatePath string, resourceConfig *ResourceConfig) (*Cgr
 		instances = append(instances, cpuSetSubsystem)
 	}
 
+	if resourceConfig.CpuShare != "" {
+		subsystem, err := InitCpuShareSubsystem(relatePath, resourceConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		instances = append(instances, subsystem)
+	}
+
 	return &CgroupsManager{
 		SubsystemInstances:instances,
 	}, nil
 }
 
 type CgroupsManager struct {
-	SubsystemInstances []Subsystem
+	SubsystemInstances []SubsystemInterface
 }
 
 func (cgroupsManager *CgroupsManager) Run(pid int) error  {
@@ -70,19 +79,15 @@ func (cgroupsManager *CgroupsManager) Destroy() error  {
 	return nil
 }
 
-type Subsystem interface {
-	Name() string
-	Apply(pid int) error
-	Remove() error
-}
-
 func InitMemorySubsystem(relatePath string, res *ResourceConfig) (*MemorySubsystem, error) {
 	if res == nil {
 		return nil, fmt.Errorf("resource config should not be empty")
 	}
 
 	subsystem := &MemorySubsystem{
-		Path: path.Join(CgroupBasePah, "memory", relatePath),
+		&Subsystem{
+			Path: path.Join(CgroupBasePah, "memory", relatePath),
+		},
 	}
 
 	if _, err := os.Stat(subsystem.Path); os.IsNotExist(err) {
@@ -105,7 +110,9 @@ func InitCpuSetSubsystem(relatePath string, res *ResourceConfig) (*CpuSetSubsyst
 	}
 
 	subsystem := &CpuSetSubsystem{
-		Path: path.Join(CgroupBasePah, "cpuset", relatePath),
+		&Subsystem{
+			Path: path.Join(CgroupBasePah, "cpuset", relatePath),
+		},
 	}
 
 	if _, err := os.Stat(subsystem.Path); os.IsNotExist(err) {
@@ -122,15 +129,46 @@ func InitCpuSetSubsystem(relatePath string, res *ResourceConfig) (*CpuSetSubsyst
 	return subsystem, nil
 }
 
-type MemorySubsystem struct {
+func InitCpuShareSubsystem(relatePath string, res *ResourceConfig) (*CpuSetSubsystem, error) {
+	if res == nil {
+		return nil, fmt.Errorf("resource config should not be empty")
+	}
+
+	subsystem := &CpuSetSubsystem{
+		&Subsystem{
+			Path: path.Join(CgroupBasePah, "cpu", relatePath),
+		},
+	}
+
+	if _, err := os.Stat(subsystem.Path); os.IsNotExist(err) {
+		if err := os.Mkdir(subsystem.Path, 0755); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	err := ioutil.WriteFile(path.Join(subsystem.Path, "cpu.shares"), []byte(res.CpuShare), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return subsystem, nil
+}
+
+type SubsystemInterface interface {
+	Remove() error
+	Apply(pid int) error
+}
+
+type Subsystem struct {
 	Path string
+	Name string
 }
 
-func (Subsystem *MemorySubsystem) Name() string  {
-	return "memory"
+func (subsystem *Subsystem) Remove() error  {
+	return os.Remove(subsystem.Path)
 }
 
-func (subsystem *MemorySubsystem) Apply(pid int) error {
+func (subsystem *Subsystem) Apply(pid int) error  {
 	if pid <= 0 {
 		return fmt.Errorf("pid should not be 0")
 	}
@@ -142,31 +180,15 @@ func (subsystem *MemorySubsystem) Apply(pid int) error {
 	return nil
 }
 
-func (subsystem *MemorySubsystem) Remove() error  {
-	return os.Remove(subsystem.Path)
+type MemorySubsystem struct {
+	*Subsystem
 }
 
 type CpuSetSubsystem struct {
-	Path string
+	*Subsystem
 }
 
-func (s *CpuSetSubsystem) Name() string  {
-	return "cpuset"
+
+type CpuShareSubsystem struct {
+	*Subsystem
 }
-
-func (subsystem *CpuSetSubsystem) Remove() error  {
-	return os.Remove(subsystem.Path)
-}
-
-func (subsystem *CpuSetSubsystem) Apply(pid int) error  {
-	if pid <= 0 {
-		return fmt.Errorf("pid should not be 0")
-	}
-
-	if err:= ioutil.WriteFile(path.Join(subsystem.Path, "tasks"), []byte(strconv.Itoa(pid)), 0644); err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
-}
-
