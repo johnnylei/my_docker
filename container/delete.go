@@ -10,6 +10,10 @@ import (
 func Delete(c *cli.Context) error  {
 	path := "/tmp"
 	name := c.String("name")
+	if name == "" {
+		return fmt.Errorf("container name should not be null")
+	}
+	
 	if  err := DestroyContainerFileSystem(path, name); err != nil {
 		return err
 	}
