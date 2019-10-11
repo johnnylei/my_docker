@@ -69,7 +69,11 @@ func PivotRoot(root string) error  {
 		return fmt.Errorf("umount %s error: %s", pivotDir, err.Error())
 	}
 
-	return os.Remove(pivotDir)
+	if err := os.Remove(pivotDir); err != nil {
+		return fmt.Errorf("remove %s error: %s", pivotDir, err.Error())
+	}
+
+	return nil
 }
 
 
