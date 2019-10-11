@@ -65,6 +65,17 @@ func main() {
 				return container.Init(c)
 			},
 		},
+		{
+			Name: "delete",
+			Flags:[]cli.Flag{
+				cli.StringFlag{
+					Name: "name",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				return container.Delete(c)
+			},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

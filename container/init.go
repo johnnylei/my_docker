@@ -20,11 +20,6 @@ func Init(c *cli.Context) error  {
 
 	log.Println("current location is :", pwd)
 	containerName := c.String("name")
-	defer func() {
-		if err := DestroyContainerFileSystem(pwd, containerName); err != nil {
-			panic(err)
-		}
-	}()
 	if err :=  InitContainerFilesystem(pwd, containerName); err != nil {
 		return err
 	}
@@ -182,21 +177,6 @@ func InitContainerFilesystem(path string, name string) error  {
 	}
 
 	return PivotRoot(containerMountPath)
-}
-
-func DestroyContainerFileSystem(path string, name string) error  {
-	mountContainerPath := fmt.Sprintf("%s/mnt/%s", path, name)
-	cmd := exec.Command("umount", mountContainerPath)
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("umount %s failed", mountContainerPath)
-	}
-
-	containerPath := fmt.Sprintf("%s/%s", path, name)
-	if err := os.Remove(containerPath); err != nil {
-		return fmt.Errorf("remove %s failed", containerPath)
-	}
-
-	return nil
 }
 
 
