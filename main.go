@@ -45,6 +45,9 @@ func main() {
 				cli.StringFlag{
 					Name: "cpushare",
 				},
+				cli.StringFlag{
+					Name: "name",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				return container.Run(c)
@@ -53,6 +56,11 @@ func main() {
 		{
 			Name: "init",
 			Usage: "init for container",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name: "name",
+				},
+			},
 			Action: func(c *cli.Context) error {
 				return container.Init(c)
 			},
