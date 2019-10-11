@@ -92,9 +92,14 @@ func CreateImageLayer(path string, imageName string) (string, error)  {
 	}
 
 	imagePath :=  path + "/" + imageName
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		if err := os.Mkdir(imagePath, 0777); err != nil {
+			return "", fmt.Errorf("mkdir %s failed", imagePath)
+		}
+	}
 	command := exec.Command("tar", "-xvf", imageTarPath, "-C", imagePath)
 	if err := command.Run(); err != nil {
-		return "", fmt.Errorf("tar failed: %s", err.Error())
+		return "", fmt.Errorf("tar failed: %s; tar:%s, target:%s", err.Error(), imageTarPath, imagePath)
 	}
 
 	return imagePath, nil
