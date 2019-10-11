@@ -24,23 +24,27 @@ func Init(c *cli.Context) error  {
 	}
 
 	if err := syscall.Mount("proc", "/proc", "proc", uintptr(syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NOSUID), ""); err != nil {
-		return err
+		return fmt.Errorf("mount /proc err: %s", err.Error())
+	}
+
+	if err := syscall.Mount("tmpfs", "/dev", "tmpfs", syscall.MS_NOSUID | syscall.MS_STRICTATIME, "mode=755"); err != nil {
+		return fmt.Errorf("mount /dev err: %s", err.Error())
 	}
 
 	reader := os.NewFile(uintptr(3), "pipe")
 	_, message, err := util.ReadPipe(reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("read pipe  err: %s", err.Error())
 	}
 
 	command := strings.Split(message, " ")
 	path, err := exec.LookPath(command[0])
 	if err != nil {
-		return err
+		return fmt.Errorf("look path %s err: %s", command, err.Error())
 	}
 
 	if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
-		return err
+		return fmt.Errorf("call %s  err: %s", path, err.Error())
 	}
 
 	return nil
