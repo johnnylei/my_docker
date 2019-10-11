@@ -35,3 +35,11 @@ func ReadPipe(reader *os.File) (int, string, error) {
 
 	return num, message, nil
 }
+
+type MyContainerError struct {
+	Message string
+}
+
+func (err *MyContainerError) Error() string  {
+	return err.Message
+}
