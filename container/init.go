@@ -169,8 +169,8 @@ func InitContainerFilesystem(path string, name string) error  {
 		return err
 	}
 
-	// mount -t aufs -o br=containerLayer:imageLayer none ./container
-	mountOptions := fmt.Sprintf("br=%s:%s", containerLayerPath, imageLayerPath)
+	// mount -t aufs -o dirs=containerLayer:imageLayer none ./container
+	mountOptions := fmt.Sprintf("dirs=%s:%s", containerLayerPath, imageLayerPath)
 	cmd := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "none", containerMountPath)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("InitContainerFilesystem mount error, %s", err.Error())

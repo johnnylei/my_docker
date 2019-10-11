@@ -13,7 +13,7 @@ func Delete(c *cli.Context) error  {
 	if name == "" {
 		return fmt.Errorf("container name should not be null")
 	}
-	
+
 	if  err := DestroyContainerFileSystem(path, name); err != nil {
 		return err
 	}
