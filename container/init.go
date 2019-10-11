@@ -83,18 +83,18 @@ func PivotRoot(root string) error  {
 
 func CreateImageLayer(path string, imageName string) (string, error)  {
 	if path == "" {
-		return _, fmt.Errorf("create image layer path should not be empty")
+		return "", fmt.Errorf("create image layer path should not be empty")
 	}
 
 	imageTarPath := path + "/busybox.tar"
 	if _, err := os.Stat(imageTarPath); os.IsNotExist(err) {
-		return _, fmt.Errorf("there is not image file: %s", imageTarPath)
+		return "", fmt.Errorf("there is not image file: %s", imageTarPath)
 	}
 
 	imagePath :=  path + "/" + imageName
 	command := exec.Command("tar", "-xvf", imageTarPath, "-C", imagePath)
 	if err := command.Run(); err != nil {
-		return _, fmt.Errorf("tar failed: %s", err.Error())
+		return "", fmt.Errorf("tar failed: %s", err.Error())
 	}
 
 	return imagePath, nil
@@ -102,16 +102,16 @@ func CreateImageLayer(path string, imageName string) (string, error)  {
 
 func CreateContainerLayer(path string, name string) (string, error)  {
 	if path == "" {
-		return _, fmt.Errorf("create container layer path should not be empty")
+		return "", fmt.Errorf("create container layer path should not be empty")
 	}
 
 	if name == "" {
-		return _, fmt.Errorf("create container layer container name should not be empty")
+		return "", fmt.Errorf("create container layer container name should not be empty")
 	}
 
 	containerPath := path + name
 	if err := os.Mkdir(containerPath, 0777); !os.IsExist(err) {
-		return _, fmt.Errorf("create container layer, create container path failed; %s", err.Error())
+		return "", fmt.Errorf("create container layer, create container path failed; %s", err.Error())
 	}
 
 	return containerPath, nil
@@ -119,16 +119,16 @@ func CreateContainerLayer(path string, name string) (string, error)  {
 
 func CreateContainerMountLayer(path string, name string) (string, error)  {
 	if path == "" {
-		return _, fmt.Errorf("create container mount layer path should not be empty")
+		return "", fmt.Errorf("create container mount layer path should not be empty")
 	}
 
 	if name == "" {
-		return _, fmt.Errorf("create container mount layer container name should not be empty")
+		return "", fmt.Errorf("create container mount layer container name should not be empty")
 	}
 
 	mountPath := path + "/mnt/" + name
 	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
-		return _, fmt.Errorf("create container mount layer, create container mount path failed; %s", err.Error())
+		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s", err.Error())
 	}
 
 	return mountPath, nil
