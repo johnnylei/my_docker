@@ -47,6 +47,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name: "name",
+					Required:true,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -59,6 +60,7 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name: "name",
+					Required:true,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -70,6 +72,7 @@ func main() {
 			Flags:[]cli.Flag{
 				cli.StringFlag{
 					Name: "name",
+					Required:true,
 				},
 			},
 			Action: func(c *cli.Context) error {
