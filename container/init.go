@@ -43,6 +43,7 @@ func Init(c *cli.Context) error  {
 		return fmt.Errorf("look path %s err: %s", command, err.Error())
 	}
 
+	log.Println("path is: ", path)
 	if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
 		return fmt.Errorf("call %s  err: %s", path, err.Error())
 	}
