@@ -114,7 +114,7 @@ func CreateContainerLayer(path string, name string) (string, error)  {
 		return "", fmt.Errorf("create container layer container name should not be empty")
 	}
 
-	containerPath := path + name
+	containerPath := path + "/" + name
 	if err := os.Mkdir(containerPath, 0777); !os.IsExist(err) {
 		return "", fmt.Errorf("create container layer, create container path failed; %s", err.Error())
 	}
