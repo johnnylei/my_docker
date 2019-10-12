@@ -15,11 +15,12 @@ func Commit(context *cli.Context) error  {
 		return fmt.Errorf("container name should not be empty")
 	}
 
-	fileSystemPath := path.Join(MountRoot, name, "*")
+	fileSystemPath := path.Join(MountRoot, name)
 	if _, err := os.Stat(fileSystemPath); err != nil {
 		return fmt.Errorf("%s error, error message:%s", fileSystemPath, err.Error())
 	}
 
+	fileSystemPath = path.Join(fileSystemPath, "*")
 	imageTarName := fmt.Sprintf("%s.tar", name)
 	cmd := exec.Command("tar", "-cf", imageTarName, fileSystemPath)
 	cmd.Stdout = os.Stdout
