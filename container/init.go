@@ -175,9 +175,8 @@ func InitContainerFilesystem(path string, name string) error  {
 
 	// mount -t aufs -o dirs=containerLayer:imageLayer none ./container
 	mountOptions := fmt.Sprintf("dirs=%s:%s", containerLayerPath, imageLayerPath)
+	log.Printf("mount root: %s, %s", mountOptions, containerMountPath)
 	cmd := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "", containerMountPath)
-	commandstr, _ := cmd.Output()
-	log.Println(string(commandstr))
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("InitContainerFilesystem mount error, %s", err.Error())
 	}
@@ -201,7 +200,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 	}
 
 	if _, err := os.Stat(mounts[0]); os.IsNotExist(err) {
-		return fmt.Errorf("source mount not exist; %s", mounts[0])
+		return fmt.Errorf("source mount not exist; %v", []byte(mounts[0]))
 	}
 
 	destinationMount := fmt.Sprintf("%s/mnt/%s/%s", path, c.String("name"), mounts[1])
