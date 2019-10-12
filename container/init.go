@@ -188,7 +188,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 		return fmt.Errorf("init container volume; path should not be empty")
 	}
 
-	volume := c.String("volume")
+	volume := c.String("v")
 	if volume == "" {
 		return nil
 	}
@@ -198,7 +198,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 		return fmt.Errorf("invalid volume, usage -v source:destination")
 	}
 
-	if _, err := os.Stat(mounts[0]); err != nil {
+	if _, err := os.Stat(mounts[0]); os.IsNotExist(err) {
 		return fmt.Errorf("source mount not exist; %s", mounts[0])
 	}
 
