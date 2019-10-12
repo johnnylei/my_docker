@@ -23,6 +23,7 @@ func Commit(context *cli.Context) error  {
 	fileSystemPath = path.Join(fileSystemPath, "*")
 	imageTarName := fmt.Sprintf("%s.tar", name)
 	cmd := exec.Command("tar", "-cf", imageTarName, fileSystemPath)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
