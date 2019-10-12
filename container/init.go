@@ -175,7 +175,9 @@ func InitContainerFilesystem(path string, name string) error  {
 
 	// mount -t aufs -o dirs=containerLayer:imageLayer none ./container
 	mountOptions := fmt.Sprintf("dirs=%s:%s", containerLayerPath, imageLayerPath)
-	cmd := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "none", containerMountPath)
+	cmd := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "", containerMountPath)
+	commandstr, _ := cmd.Output()
+	log.Println(string(commandstr))
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("InitContainerFilesystem mount error, %s", err.Error())
 	}
@@ -204,7 +206,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 
 	destinationMount := fmt.Sprintf("%s/mnt/%s/%s", path, c.String("name"), mounts[1])
 
-	if err := exec.Command("mkdir", "-p", destinationMount); err != nil {
+	if err := exec.Command("mkdir", "-p", destinationMount).Run(); err != nil {
 		return fmt.Errorf("mkdir %s failed", destinationMount)
 	}
 
