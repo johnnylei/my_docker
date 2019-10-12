@@ -2,14 +2,14 @@ package container
 
 import (
 	"fmt"
-	"github.com/johnnylei/my_docker/subsystem"
-	"github.com/johnnylei/my_docker/util"
+	//"github.com/johnnylei/my_docker/subsystem"
+	//"github.com/johnnylei/my_docker/util"
 	"github.com/urfave/cli"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
+	//"syscall"
 )
 
 const WorkSpaceRoot  = "/tmp"
