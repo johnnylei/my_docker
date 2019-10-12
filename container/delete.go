@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"os"
-	"os/exec"
 )
 
 func Delete(c *cli.Context) error  {
@@ -23,9 +22,13 @@ func Delete(c *cli.Context) error  {
 
 func DestroyContainerFileSystem(path string, name string) error  {
 	mountContainerPath := fmt.Sprintf("%s/mnt/%s", path, name)
-	cmd := exec.Command("umount", mountContainerPath)
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("umount %s failed", mountContainerPath)
+	//cmd := exec.Command("umount", mountContainerPath)
+	//if err := cmd.Run(); err != nil {
+	//	return fmt.Errorf("umount %s failed", mountContainerPath)
+	//}
+
+	if err := os.Remove(mountContainerPath); !os.IsNotExist(err) {
+		return fmt.Errorf("remove %s failed", mountContainerPath)
 	}
 
 	containerPath := fmt.Sprintf("%s/%s", path, name)

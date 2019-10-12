@@ -24,6 +24,10 @@ func Init(c *cli.Context) error  {
 		return err
 	}
 
+	if err := initContainerVolume(pwd, c); err != nil {
+		return err
+	}
+
 	if err := syscall.Mount("proc", "/proc", "proc", uintptr(syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NOSUID), ""); err != nil {
 		return fmt.Errorf("mount /proc err: %s", err.Error())
 	}
@@ -177,6 +181,38 @@ func InitContainerFilesystem(path string, name string) error  {
 	}
 
 	return PivotRoot(containerMountPath)
+}
+
+func initContainerVolume(path string, c *cli.Context) error  {
+	if path == "" {
+		return fmt.Errorf("init container volume; path should not be empty")
+	}
+
+	volume := c.String("volume")
+	if volume == "" {
+		return nil
+	}
+
+	mounts := strings.Split(volume, ":")
+	if len(mounts) < 2 {
+		return fmt.Errorf("invalid volume, usage -v source:destination")
+	}
+
+	if _, err := os.Stat(mounts[0]); err != nil {
+		return fmt.Errorf("source mount not exist; %s", mounts[0])
+	}
+
+	destinationMount := fmt.Sprintf("%s/mnt/%s/%s", path, c.String("name"), mounts[1])
+
+	if err := exec.Command("mkdir", "-p", destinationMount); err != nil {
+		return fmt.Errorf("mkdir %s failed", destinationMount)
+	}
+
+	if err := exec.Command("mount", mounts[0], destinationMount).Run(); err != nil {
+		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s", mounts[0], destinationMount)
+	}
+
+	return nil
 }
 
 

@@ -48,6 +48,10 @@ func main() {
 				cli.StringFlag{
 					Name: "name",
 				},
+				cli.StringFlag{
+					Name: "v",
+					Usage: "volume mount",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				return container.Run(c)
@@ -59,6 +63,10 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name: "name",
+				},
+				cli.StringFlag{
+					Name: "v",
+					Usage: "volume",
 				},
 			},
 			Action: func(c *cli.Context) error {
