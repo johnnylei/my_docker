@@ -2,14 +2,14 @@ package container
 
 import (
 	"fmt"
-	//"github.com/johnnylei/my_docker/subsystem"
-	//"github.com/johnnylei/my_docker/util"
+	"github.com/johnnylei/my_docker/subsystem"
+	"github.com/johnnylei/my_docker/util"
 	"github.com/urfave/cli"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
-	//"syscall"
+	"syscall"
 )
 
 const WorkSpaceRoot  = "/tmp"
@@ -19,57 +19,57 @@ func Run(c *cli.Context) error  {
 		return fmt.Errorf("missing container command")
 	}
 
-	//read, write, err := util.NewPipe()
-	//if err != nil {
-	//	return err
-	//}
+	read, write, err := util.NewPipe()
+	if err != nil {
+		return err
+	}
 
 	if err := InitContainerFilesystem(WorkSpaceRoot, c); err != nil {
 		return err
 	}
 
-	//cmd := exec.Command("/proc/self/exe", BuildInitArgs(c)...)
-	//cmd.SysProcAttr = &syscall.SysProcAttr{
-	//	Cloneflags:syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET,
-	//}
-	//
-	//if tty := c.Bool("ti"); tty {
-	//	cmd.Stdin = os.Stdin
-	//	cmd.Stdout = os.Stdout
-	//	cmd.Stderr = os.Stderr
-	//}
-	//
-	//cmd.ExtraFiles = append(cmd.ExtraFiles, read)
-	//if _, err := write.WriteString(strings.Join(c.Args(), " ")); err != nil {
-	//	return err
-	//}
-	//
-	//if err := cmd.Start(); err != nil {
-	//	return err
-	//}
-	//
-	//resourceConfig := &subsystem.ResourceConfig {
-	//	MemoryLimit: c.Int("m"),
-	//	CpuSet: c.String("cpuset"),
-	//	CpuShare: c.String("cpushare"),
-	//}
-	//
-	//manager, err := subsystem.InitCgroupsManager("mydocker-cgroup", resourceConfig)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if err := manager.Run(cmd.Process.Pid); err != nil {
-	//	return err
-	//}
-	//
-	//defer manager.Destroy()
-	//
-	//if err := cmd.Wait(); err != nil {
-	//	return err
-	//}
-	//
-	//return nil
+	cmd := exec.Command("/proc/self/exe", BuildInitArgs(c)...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags:syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET,
+	}
+
+	if tty := c.Bool("ti"); tty {
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+
+	cmd.ExtraFiles = append(cmd.ExtraFiles, read)
+	if _, err := write.WriteString(strings.Join(c.Args(), " ")); err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	resourceConfig := &subsystem.ResourceConfig {
+		MemoryLimit: c.Int("m"),
+		CpuSet: c.String("cpuset"),
+		CpuShare: c.String("cpushare"),
+	}
+
+	manager, err := subsystem.InitCgroupsManager("mydocker-cgroup", resourceConfig)
+	if err != nil {
+		return err
+	}
+
+	if err := manager.Run(cmd.Process.Pid); err != nil {
+		return err
+	}
+
+	defer manager.Destroy()
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func BuildInitArgs(c *cli.Context) []string  {
@@ -139,12 +139,12 @@ func CreateContainerMountLayer(path string, name string) (string, error)  {
 		return "", fmt.Errorf("create container mount layer container name should not be empty")
 	}
 
-	mountPathRoot := fmt.Sprintf("%s/mnt", path)
-	if err := os.Mkdir(mountPathRoot, 0777); !os.IsExist(err) {
-		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPathRoot)
+	mountPath := fmt.Sprintf("%s/mnt", path)
+	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
+		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
 	}
 
-	mountPath := fmt.Sprintf("%s/%s", mountPathRoot, name)
+	mountPath = fmt.Sprintf("%s/%s", mountPath, name)
 	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
 		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
 	}
