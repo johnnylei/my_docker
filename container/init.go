@@ -208,6 +208,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 		return fmt.Errorf("mkdir %s failed", destinationMount)
 	}
 
+	log.Printf("mounting volume: source:%s; destination:%s", mounts[0], destinationMount)
 	if err := exec.Command("mount", mounts[0], destinationMount).Run(); err != nil {
 		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s", mounts[0], destinationMount)
 	}
