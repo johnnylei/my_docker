@@ -19,12 +19,7 @@ func Init(c *cli.Context) error  {
 	}
 
 	log.Println("current location is :", pwd)
-	containerName := c.String("name")
-	if err :=  InitContainerFilesystem(pwd, containerName); err != nil {
-		return err
-	}
-
-	if err := initContainerVolume(pwd, c); err != nil {
+	if err :=  InitContainerFilesystem(pwd, c); err != nil {
 		return err
 	}
 
@@ -149,11 +144,12 @@ func CreateContainerMountLayer(path string, name string) (string, error)  {
 	return mountPath, nil
 }
 
-func InitContainerFilesystem(path string, name string) error  {
+func InitContainerFilesystem(path string, c *cli.Context) error  {
 	if path == "" {
 		return fmt.Errorf("init container file system; path should not be empty")
 	}
 
+	name := c.String("name")
 	if name == "" {
 		return fmt.Errorf("init container file system; container name should not be empty")
 	}
@@ -181,6 +177,10 @@ func InitContainerFilesystem(path string, name string) error  {
 		return fmt.Errorf("InitContainerFilesystem mount error, %s", err.Error())
 	}
 
+	if err := initContainerVolume(path, c); err != nil {
+		return err
+	}
+
 	return PivotRoot(containerMountPath)
 }
 
@@ -200,17 +200,18 @@ func initContainerVolume(path string, c *cli.Context) error  {
 	}
 
 	if _, err := os.Stat(mounts[0]); os.IsNotExist(err) {
-		return fmt.Errorf("source mount not exist; %v", []byte(mounts[0]))
+		return fmt.Errorf("source mount not exist; %s, %v", mounts[0], []byte(mounts[0]))
 	}
 
-	destinationMount := fmt.Sprintf("%s/mnt/%s/%s", path, c.String("name"), mounts[1])
+	destinationMount := fmt.Sprintf("%s/mnt/%s%s", path, c.String("name"), mounts[1])
 
 	if err := exec.Command("mkdir", "-p", destinationMount).Run(); err != nil {
 		return fmt.Errorf("mkdir %s failed", destinationMount)
 	}
 
 	log.Printf("mounting volume: source:%s; destination:%s", mounts[0], destinationMount)
-	if err := exec.Command("mount", mounts[0], destinationMount).Run(); err != nil {
+	mountOptions := fmt.Sprintf("dirs=%s", mounts[0])
+	if err := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "none", destinationMount).Run(); err != nil {
 		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s", mounts[0], destinationMount)
 	}
 

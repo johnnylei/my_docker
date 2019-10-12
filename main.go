@@ -84,6 +84,17 @@ func main() {
 				return container.Delete(c)
 			},
 		},
+		{
+			Name: "commit",
+			Flags:[]cli.Flag{
+				cli.StringFlag{
+					Name: "name",
+				},
+			},
+			Action: func(context *cli.Context) error {
+				return container.Commit(context)
+			},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
