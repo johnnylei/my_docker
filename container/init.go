@@ -19,7 +19,12 @@ func Init(c *cli.Context) error  {
 	}
 
 	log.Println("current location is :", pwd)
-	if err :=  PivotRoot(pwd); err != nil {
+	containerName := c.String("name")
+	if err :=  InitContainerFilesystem(pwd, containerName); err != nil {
+		return err
+	}
+
+	if err := initContainerVolume(pwd, c); err != nil {
 		return err
 	}
 
@@ -43,6 +48,7 @@ func Init(c *cli.Context) error  {
 		return fmt.Errorf("look path %s err: %s", command, err.Error())
 	}
 
+	log.Println("path is: ", path)
 	if err:= syscall.Exec(path, command[0:], os.Environ()); err !=nil {
 		return fmt.Errorf("call %s  err: %s", path, err.Error())
 	}
@@ -56,7 +62,7 @@ func PivotRoot(root string) error  {
 	}
 
 	pivotDir := filepath.Join(root, ".pivot_root")
-	if err := os.Mkdir(pivotDir, 0777); err != nil {
+	if err := os.Mkdir(pivotDir, 0777); !os.IsExist(err) {
 		return fmt.Errorf("mkdir pivotDir err:%s", err.Error())
 	}
 
@@ -80,5 +86,135 @@ func PivotRoot(root string) error  {
 	return nil
 }
 
+func CreateImageLayer(path string, imageName string) (string, error)  {
+	if path == "" {
+		return "", fmt.Errorf("create image layer path should not be empty")
+	}
+
+	imageTarPath := fmt.Sprintf("%s/busybox.tar", path)
+	if _, err := os.Stat(imageTarPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("there is not image file: %s", imageTarPath)
+	}
+
+	imagePath := fmt.Sprintf("%s/%s", path, imageName)
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		if err := os.Mkdir(imagePath, 0777); err != nil {
+			return "", fmt.Errorf("mkdir %s failed", imagePath)
+		}
+	}
+	command := exec.Command("tar", "-xvf", imageTarPath, "-C", imagePath)
+	if err := command.Run(); err != nil {
+		return "", fmt.Errorf("tar failed: %s; tar:%s, target:%s", err.Error(), imageTarPath, imagePath)
+	}
+
+	return imagePath, nil
+}
+
+func CreateContainerLayer(path string, name string) (string, error)  {
+	if path == "" {
+		return "", fmt.Errorf("create container layer path should not be empty")
+	}
+
+	if name == "" {
+		return "", fmt.Errorf("create container layer container name should not be empty")
+	}
+
+	containerPath := fmt.Sprintf("%s/%s", path, name)
+	if err := os.Mkdir(containerPath, 0777); !os.IsExist(err) {
+		return "", fmt.Errorf("create container layer, create container path failed; %s", err.Error())
+	}
+
+	return containerPath, nil
+}
+
+func CreateContainerMountLayer(path string, name string) (string, error)  {
+	if path == "" {
+		return "", fmt.Errorf("create container mount layer path should not be empty")
+	}
+
+	if name == "" {
+		return "", fmt.Errorf("create container mount layer container name should not be empty")
+	}
+
+	mountPath := fmt.Sprintf("%s/mnt", path)
+	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
+		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+	}
+
+	mountPath = fmt.Sprintf("%s/%s", mountPath, name)
+	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
+		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+	}
+
+	return mountPath, nil
+}
+
+func InitContainerFilesystem(path string, name string) error  {
+	if path == "" {
+		return fmt.Errorf("init container file system; path should not be empty")
+	}
+
+	if name == "" {
+		return fmt.Errorf("init container file system; container name should not be empty")
+	}
+
+	imageLayerPath, err := CreateImageLayer(path, "busybox")
+	if err != nil {
+		return err
+	}
+
+	containerLayerPath, err := CreateContainerLayer(path, name)
+	if err != nil {
+		return err
+	}
+
+	containerMountPath, err := CreateContainerMountLayer(path, name)
+	if err != nil {
+		return err
+	}
+
+	// mount -t aufs -o dirs=containerLayer:imageLayer none ./container
+	mountOptions := fmt.Sprintf("dirs=%s:%s", containerLayerPath, imageLayerPath)
+	log.Printf("mount root: %s, %s", mountOptions, containerMountPath)
+	cmd := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "", containerMountPath)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("InitContainerFilesystem mount error, %s", err.Error())
+	}
+
+	return PivotRoot(containerMountPath)
+}
+
+func initContainerVolume(path string, c *cli.Context) error  {
+	if path == "" {
+		return fmt.Errorf("init container volume; path should not be empty")
+	}
+
+	volume := c.String("v")
+	if volume == "" {
+		return nil
+	}
+
+	mounts := strings.Split(volume, ":")
+	if len(mounts) < 2 {
+		return fmt.Errorf("invalid volume, usage -v source:destination")
+	}
+
+	if _, err := os.Stat(mounts[0]); os.IsNotExist(err) {
+		return fmt.Errorf("source mount not exist; %v", []byte(mounts[0]))
+	}
+
+	destinationMount := fmt.Sprintf("%s/mnt/%s/%s", path, c.String("name"), mounts[1])
+
+	if err := exec.Command("mkdir", "-p", destinationMount).Run(); err != nil {
+		return fmt.Errorf("mkdir %s failed", destinationMount)
+	}
+
+	log.Printf("mounting volume: source:%s; destination:%s", mounts[0], destinationMount)
+	if err := exec.Command("mount", mounts[0], destinationMount).Run(); err != nil {
+		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s", mounts[0], destinationMount)
+	}
+
+	return nil
+}
 
 

@@ -21,7 +21,8 @@ func Run(c *cli.Context) error  {
 		return err
 	}
 
-	cmd := exec.Command("/proc/self/exe", "init")
+
+	cmd := exec.Command("/proc/self/exe", BuildInitArgs(c)...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags:syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET,
 	}
@@ -63,4 +64,13 @@ func Run(c *cli.Context) error  {
 	}
 
 	return nil
+}
+
+func BuildInitArgs(c *cli.Context) []string  {
+	ret := []string{"init", "-name", c.String("name")}
+	if c.String("v") != "" {
+		ret = append(ret, "-v", c.String("v"))
+	}
+
+	return ret
 }
