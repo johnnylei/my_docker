@@ -203,7 +203,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 		return fmt.Errorf("source mount not exist; %s, %v", mounts[0], []byte(mounts[0]))
 	}
 
-	destinationMount := fmt.Sprintf("%s/%s%s", path, c.String("name"), mounts[1])
+	destinationMount := fmt.Sprintf("%s/mnt/%s%s", path, c.String("name"), mounts[1])
 
 	if err := exec.Command("mkdir", "-p", destinationMount).Run(); err != nil {
 		return fmt.Errorf("mkdir %s failed", destinationMount)
