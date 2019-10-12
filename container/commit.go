@@ -20,7 +20,6 @@ func Commit(context *cli.Context) error  {
 		return fmt.Errorf("%s error, error message:%s", fileSystemPath, err.Error())
 	}
 
-	fileSystemPath = path.Join(fileSystemPath, "*")
 	imageTarName := fmt.Sprintf("%s.tar", name)
 	cmd := exec.Command("tar", "-cf", imageTarName, "-C", fileSystemPath, ".")
 	cmd.Stdin = os.Stdin
