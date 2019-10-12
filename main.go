@@ -68,6 +68,10 @@ func main() {
 					Name: "v",
 					Usage: "volume",
 				},
+				cli.StringFlag{
+					Name: "root",
+					Usage: "root path",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				return container.Init(c)
