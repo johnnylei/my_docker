@@ -54,9 +54,11 @@ func Run(c *cli.Context) error  {
 		return err
 	}
 
+	uid := util.Uid()
+	fmt.Printf("uid:%s\n", uid)
 	containerInformation := &ContainerInformation{
 		Pid: cmd.Process.Pid,
-		Id: util.Uid(),
+		Id: uid,
 		Name: c.String("name"),
 		InitCommand: containerInitCommand,
 		Status: STATUS_RUNING,
