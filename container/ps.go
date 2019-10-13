@@ -18,7 +18,7 @@ func Ps(context *cli.Context) error  {
 		return nil
 	}
 
-	fmt.Printf("id\tname\tcreate_time\tcommand\tstatus\t\n")
+	fmt.Printf("id\t\tname\t\tcreate_time\t\tcommand\t\tstatus\t\t\n")
 	for _, container := range containers {
 		containerInformationPath := path.Join(DefaultContainerInformationLocation, container.Name(), InformationFileName)
 		informationByte, err := ioutil.ReadFile(containerInformationPath)
@@ -31,7 +31,7 @@ func Ps(context *cli.Context) error  {
 			continue
 		}
 
-		fmt.Printf("%s\t%s\t%s\t%s\t%s\t\n", information.Id, information.Name, information.CreatedTime, information.InitCommand, information.Status)
+		fmt.Printf("%s\t\t%s\t\t%s\t\t%s\t\t%s\t\t\n", information.Id, information.Name, information.CreatedTime, information.InitCommand, information.Status)
 	}
 
 	return nil

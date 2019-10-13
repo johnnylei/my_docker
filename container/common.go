@@ -7,5 +7,7 @@ var (
 	STATUS_EXIT string = "exited"
 	ConfigName string = "config.json"
 	InformationFileName string = "information.json"
+	LogFileName string = "log.log"
+	ErrorLogFileName string = "error.log"
 	DefaultContainerInformationLocation string = "/var/run/mydocker/"
 )

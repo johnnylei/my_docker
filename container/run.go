@@ -42,6 +42,14 @@ func Run(c *cli.Context) error  {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+	} else {
+		logFile, errorLogFile, err := InitLogFile(c)
+		if err != nil {
+			return err
+		}
+
+		cmd.Stdout = logFile
+		cmd.Stderr = errorLogFile
 	}
 
 	containerInitCommand := strings.Join(c.Args(), " ")
