@@ -16,7 +16,7 @@ func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
 	}
 
 	if err != nil && os.IsNotExist(err) {
-		logFileResource, err := os.Create(logFile)
+		logFileResource, err = os.Create(logFile)
 		if err != nil {
 			return nil, nil, fmt.Errorf("create log file %s failed; error:%s", logFile, err.Error())
 		}
@@ -29,7 +29,7 @@ func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
 	}
 
 	if err != nil && os.IsNotExist(err) {
-		errorLogFileResource, err := os.Create(errorLogFile)
+		errorLogFileResource, err = os.Create(errorLogFile)
 		if err != nil {
 			return nil, nil, fmt.Errorf("create log file %s failed; error:%s", logFile, err.Error())
 		}
