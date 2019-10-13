@@ -2,7 +2,9 @@ package util
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 )
 
 func NewPipe() (*os.File, *os.File, error) {
@@ -34,4 +36,17 @@ func ReadPipe(reader *os.File) (int, string, error) {
 	}
 
 	return num, message, nil
+}
+
+func Uid()  string {
+	base := time.Now().UnixNano()
+	rand.Seed(base)
+	characters := "qwertyuiopasdfghjklzxcvbnm,.!@#$%^&*0987654321"
+	charactersLen := len(characters)
+	Uid := fmt.Sprintf("%d", base)
+	for i := 0; i < 4; i++ {
+		Uid += string(rand.Intn(charactersLen - 1))
+	}
+
+	return Uid
 }

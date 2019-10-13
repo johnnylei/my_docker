@@ -7,23 +7,18 @@ import (
 	"os"
 )
 
-//func main() {
-//	var wg sync.WaitGroup
-//	wg.Add(2)
-//	_, write, _ := util.NewPipe()
-//	go func() {
-//		write.WriteString("hello fucker")
-//		wg.Done()
-//	}()
 //
-//	go func() {
-//		buffer := make([]byte, 1024)
-//		reader := os.NewFile(uintptr(3), "pipe")
-//		reader.Read(buffer)
-//		fmt.Println(string(buffer))
-//		wg.Done()
-//	}()
-//	wg.Wait()
+//func main() {
+//	containerInformation := &container.ContainerInformation{
+//		Pid: 1,
+//		Id: "xxx",
+//		Name: "namexxx",
+//		InitCommand: "init command",
+//		Status: container.STATUS_RUNING,
+//		CreatedTime: time.Now().Format("2006-01-02 15:04:05"),
+//	}
+//	InformationBytes, _ := json.Marshal(containerInformation)
+//	log.Println(string(InformationBytes))
 //}
 
 func main() {
@@ -35,6 +30,9 @@ func main() {
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name: "ti",
+				},
+				cli.BoolFlag{
+					Name: "d",
 				},
 				cli.IntFlag{
 					Name: "m",

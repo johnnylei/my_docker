@@ -1,6 +1,7 @@
 package container
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/johnnylei/my_docker/subsystem"
 	"github.com/johnnylei/my_docker/util"
@@ -8,15 +9,31 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"syscall"
+	"time"
 )
 
-const WorkSpaceRoot  = "/tmp"
+var (
+	WorkSpaceRoot  = "/tmp"
+	STATUS_RUNING string = "running"
+	STATUS_STOP string = "stop"
+	STATUS_EXIT string = "exited"
+	ConfigName string = "config.json"
+	InformationFileName string = "information.json"
+	DefaultContainerInformationLocation string = "/var/run/mydocker/%s/"
+)
 
 func Run(c *cli.Context) error  {
 	if len(c.Args()) < 1 {
 		return fmt.Errorf("missing container command")
+	}
+
+	tty :=  c.Bool("ti")
+	detach := c.Bool("d")
+	if tty && detach {
+		return fmt.Errorf("-ti and -d should not be both exist")
 	}
 
 	read, write, err := util.NewPipe()
@@ -33,18 +50,32 @@ func Run(c *cli.Context) error  {
 		Cloneflags:syscall.CLONE_NEWIPC | syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS | syscall.CLONE_NEWNET,
 	}
 
-	if tty := c.Bool("ti"); tty {
+	if tty {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
 
+	containerInitCommand := strings.Join(c.Args(), " ")
 	cmd.ExtraFiles = append(cmd.ExtraFiles, read)
-	if _, err := write.WriteString(strings.Join(c.Args(), " ")); err != nil {
+	if _, err := write.WriteString(containerInitCommand); err != nil {
 		return err
 	}
 
 	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	containerInfomation := &ContainerInformation{
+		Pid: cmd.Process.Pid,
+		Id: util.Uid(),
+		Name: c.String("name"),
+		InitCommand: containerInitCommand,
+		Status: STATUS_RUNING,
+		CreatedTime: time.Now().Format("2006-01-02 15:04:05"),
+	}
+
+	if err := containerInfomation.Record(); err != nil {
 		return err
 	}
 
@@ -65,8 +96,10 @@ func Run(c *cli.Context) error  {
 
 	defer manager.Destroy()
 
-	if err := cmd.Wait(); err != nil {
-		return err
+	if tty {
+		if err := cmd.Wait(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -221,6 +254,48 @@ func initContainerVolume(path string, c *cli.Context) error  {
 	mountOptions := fmt.Sprintf("dirs=%s", mounts[0])
 	if err := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "none", destinationMount).Run(); err != nil {
 		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s", mounts[0], destinationMount)
+	}
+
+	return nil
+}
+
+type ContainerInformation struct {
+	Pid int `json:"pid"`
+	Id string `json:"id"`
+	Name string `json:"name"`
+	InitCommand string `json:"init_command"`
+	Status string `json:"status"`
+	CreatedTime string `json:"created_time"`
+}
+
+func (information *ContainerInformation) Record() error  {
+	BasePath := fmt.Sprintf(DefaultContainerInformationLocation, information.Name)
+	if _, err := os.Stat(BasePath); os.IsNotExist(err) {
+		if err := os.Mkdir(BasePath, 0777); err != nil {
+			return fmt.Errorf("mkdir %s failed, err:%s", BasePath, err.Error())
+		}
+	}
+
+	InformationFile := path.Join(BasePath, InformationFileName)
+	if _, err := os.Stat(InformationFile); os.IsNotExist(err) {
+		if _, err := os.Create(InformationFile); err != nil {
+			return fmt.Errorf("create %s failed, err:%s", InformationFile, err.Error())
+		}
+	}
+
+	InformationFileFd, err := os.Open(InformationFile)
+	if err != nil {
+		return fmt.Errorf("open %s failed, error:%s", InformationFile, err.Error())
+	}
+
+	informationBytes, err := json.Marshal(information)
+	if err != nil {
+		return fmt.Errorf("json encode failed; err:%s", err.Error())
+	}
+
+	informationJson := string(informationBytes)
+	if _, err := InformationFileFd.WriteString(informationJson); err != nil {
+		return fmt.Errorf("wirte information failed; file:%s, information:%s, error:%s", InformationFile, informationJson, err.Error())
 	}
 
 	return nil
