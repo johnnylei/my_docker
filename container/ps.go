@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func ps(context *cli.Context) error  {
+func Ps(context *cli.Context) error  {
 	containers, err := ioutil.ReadDir(DefaultContainerInformationLocation)
 	if err != nil {
 		return fmt.Errorf("read dir %s failed, error:%s", DefaultContainerInformationLocation, err.Error())

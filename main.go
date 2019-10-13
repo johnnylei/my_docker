@@ -100,8 +100,8 @@ func main() {
 		{
 			Name: "ps",
 			Action: func(context *cli.Context) error {
-
-			}
+				return container.Ps(context)
+			},
 		},
 	}
 
