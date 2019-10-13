@@ -289,7 +289,7 @@ func (information *ContainerInformation) Record() error  {
 		}
 	}
 
-	InformationFileFd, err := os.Open(InformationFile)
+	InformationFileFd, err := os.OpenFile(InformationFile, os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("open %s failed, error:%s", InformationFile, err.Error())
 	}
