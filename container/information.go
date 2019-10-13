@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 )
 
@@ -57,7 +58,7 @@ func (information *ContainerInformation) Record() error  {
 
 func (information *ContainerInformation) Destroy() error  {
 	informationFile := path.Join(DefaultContainerInformationLocation, information.Name)
-	if err := os.Remove(informationFile); err != nil {
+	if err := exec.Command("rm", "-rf", informationFile).Run(); err != nil {
 		return fmt.Errorf("remove information file %s failed; error:%s", informationFile, err.Error())
 	}
 
