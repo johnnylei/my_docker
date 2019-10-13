@@ -45,7 +45,7 @@ func Uid()  string {
 	charactersLen := len(characters)
 	Uid := fmt.Sprintf("%d", base)
 	for i := 0; i < 4; i++ {
-		Uid += string(rand.Intn(charactersLen - 1))
+		Uid += string(characters[rand.Intn(charactersLen - 1)])
 	}
 
 	return Uid
