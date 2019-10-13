@@ -22,7 +22,7 @@ var (
 	STATUS_EXIT string = "exited"
 	ConfigName string = "config.json"
 	InformationFileName string = "information.json"
-	DefaultContainerInformationLocation string = "/var/run/mydocker/%s/"
+	DefaultContainerInformationLocation string = "/var/run/mydocker/"
 )
 
 func Run(c *cli.Context) error  {
@@ -66,7 +66,7 @@ func Run(c *cli.Context) error  {
 		return err
 	}
 
-	containerInfomation := &ContainerInformation{
+	containerInformation := &ContainerInformation{
 		Pid: cmd.Process.Pid,
 		Id: util.Uid(),
 		Name: c.String("name"),
@@ -75,7 +75,7 @@ func Run(c *cli.Context) error  {
 		CreatedTime: time.Now().Format("2006-01-02 15:04:05"),
 	}
 
-	if err := containerInfomation.Record(); err != nil {
+	if err := containerInformation.Record(); err != nil {
 		return err
 	}
 
@@ -269,7 +269,13 @@ type ContainerInformation struct {
 }
 
 func (information *ContainerInformation) Record() error  {
-	BasePath := fmt.Sprintf(DefaultContainerInformationLocation, information.Name)
+	if _, err := os.Stat(DefaultContainerInformationLocation); os.IsNotExist(err) {
+		if err := os.Mkdir(DefaultContainerInformationLocation, 077); err != nil {
+			return fmt.Errorf("mkdir %s failed, err:%s", DefaultContainerInformationLocation, err.Error())
+		}
+	}
+
+	BasePath := path.Join(DefaultContainerInformationLocation, information.Name)
 	if _, err := os.Stat(BasePath); os.IsNotExist(err) {
 		if err := os.Mkdir(BasePath, 0777); err != nil {
 			return fmt.Errorf("mkdir %s failed, err:%s", BasePath, err.Error())
