@@ -41,7 +41,7 @@ func ReadPipe(reader *os.File) (int, string, error) {
 func Uid()  string {
 	base := time.Now().UnixNano()
 	rand.Seed(base)
-	characters := "qwertyuiopasdfghjklzxcvbnm,.!@#$%^&*0987654321"
+	characters := "qwertyuiopasdfghjklzxcvbnm0987654321"
 	charactersLen := len(characters)
 	Uid := fmt.Sprintf("%d", base)
 	for i := 0; i < 4; i++ {
