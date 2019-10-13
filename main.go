@@ -97,6 +97,12 @@ func main() {
 				return container.Commit(context)
 			},
 		},
+		{
+			Name: "ps",
+			Action: func(context *cli.Context) error {
+
+			}
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

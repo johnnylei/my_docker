@@ -13,16 +13,6 @@ import (
 	"time"
 )
 
-var (
-	WorkSpaceRoot  = "/tmp"
-	STATUS_RUNING string = "running"
-	STATUS_STOP string = "stop"
-	STATUS_EXIT string = "exited"
-	ConfigName string = "config.json"
-	InformationFileName string = "information.json"
-	DefaultContainerInformationLocation string = "/var/run/mydocker/"
-)
-
 func Run(c *cli.Context) error  {
 	if len(c.Args()) < 1 {
 		return fmt.Errorf("missing container command")
