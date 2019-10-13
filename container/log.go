@@ -8,7 +8,20 @@ import (
 )
 
 func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
+	if _, err := os.Stat(DefaultContainerInformationLocation); os.IsNotExist(err) {
+		if err := os.Mkdir(DefaultContainerInformationLocation, 077); err != nil {
+			return nil, nil, fmt.Errorf("mkdir %s failed, err:%s", DefaultContainerInformationLocation, err.Error())
+		}
+	}
+
 	containerName := context.String("name")
+	BasePath := path.Join(DefaultContainerInformationLocation, containerName)
+	if _, err := os.Stat(BasePath); os.IsNotExist(err) {
+		if err := os.Mkdir(BasePath, 0777); err != nil {
+			return nil, nil, fmt.Errorf("mkdir %s failed, err:%s", BasePath, err.Error())
+		}
+	}
+
 	logFile := path.Join(DefaultContainerInformationLocation, containerName, LogFileName)
 	logFileResource, err := os.OpenFile(logFile, os.O_WRONLY | os.O_APPEND | os.O_CREATE, 0644)
 	if err != nil && !os.IsNotExist(err) {
