@@ -16,7 +16,7 @@ func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
 	}
 
 	errorLogFile := path.Join(DefaultContainerInformationLocation, containerName, ErrorLogFileName)
-	errorLogFileResource, err := os.OpenFile(errorLogFile, os.O_CREATE | os.O_APPEND | os.O_WRONL, 0644)
+	errorLogFileResource, err := os.OpenFile(errorLogFile, os.O_CREATE | os.O_APPEND | os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, nil, fmt.Errorf("open error log file %s failed; error:%s", errorLogFile, err.Error())
 	}
