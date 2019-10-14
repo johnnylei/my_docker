@@ -56,6 +56,7 @@ __attribute__((constructor)) int enter_namespace(void) {
 }
  */
 
+import "C"
 import (
 	"fmt"
 	"github.com/urfave/cli"
@@ -63,7 +64,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"C"
 )
 
 func Exec(context *cli.Context) error {
