@@ -114,6 +114,17 @@ func main() {
 				return container.Logs(context)
 			},
 		},
+		{
+			Name: "stop",
+			Flags:[]cli.Flag{
+				cli.StringFlag{
+					Name: "name",
+				},
+			},
+			Action: func(context *cli.Context) error {
+				return container.Logs(context)
+			},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

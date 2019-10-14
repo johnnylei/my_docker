@@ -3,10 +3,25 @@ package container
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 )
+
+func LoadContainerInformation(Name string) (*ContainerInformation, error)  {
+	informationPath := path.Join(DefaultContainerInformationLocation, Name, InformationFileName)
+	informationBytes, err := ioutil.ReadFile(informationPath)
+	if err != nil {
+		return nil, fmt.Errorf("read %s failed, error: %s\n", informationPath, err.Error())
+	}
+
+	information := &ContainerInformation{}
+	if err := json.Unmarshal(informationBytes, information); err != nil {
+		return nil, fmt.Errorf("load %s failed, error:%s\n", informationPath, err.Error())
+	}
+	return information,err
+}
 
 type ContainerInformation struct {
 	Pid int `json:"pid"`
@@ -65,3 +80,9 @@ func (information *ContainerInformation) Destroy() error  {
 	return nil
 }
 
+func (information *ContainerInformation) Stop()  {
+	information.Status = STATUS_STOP
+	information.Pid = 0
+	information.CreatedTime = ""
+	information.InitCommand = ""
+}
