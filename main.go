@@ -122,6 +122,15 @@ func main() {
 				cli.StringFlag{
 					Name: "name",
 				},
+				cli.BoolFlag{
+					Name: "ti",
+				},
+				cli.BoolFlag{
+					Name: "d",
+				},
+				cli.BoolFlag{
+					Name: "child",
+				},
 			},
 			Action: func(context *cli.Context) error {
 				return container.Exec(context)

@@ -21,7 +21,6 @@ __attribute__((constructor)) int enter_namespace(void) {
 	pid = getenv("ENV_CONTAINER_PID");
 	command = getenv("ENV_CONTAINER_EXEC_COMMAND");
 	if (NULL == pid || NULL == command) {
-		printf("pid %s or command %s should not be empty\n", pid, command);
 		return -1;
 	}
 
@@ -56,19 +55,21 @@ __attribute__((constructor)) int enter_namespace(void) {
 }
  */
  import "C"
-import (
-	"fmt"
-	"github.com/urfave/cli"
-	"os"
-	"os/exec"
-	"strconv"
-	"strings"
-)
+ import (
+	 "fmt"
+	 "github.com/johnnylei/my_docker/util"
+	 "github.com/urfave/cli"
+	 "os"
+	 "os/exec"
+	 "strings"
+	 "time"
+ )
 
 func Exec(context *cli.Context) error {
-	if os.Getenv(ENV_CONTAINER_PID) != "" {
-		fmt.Printf("%s runnig\n", os.Getenv(ENV_CONTAINER_EXEC_COMMAND))
-		return nil
+	if context.Bool("child") {
+		for {
+			time.Sleep(10)
+		}
 	}
 
 	containerName := context.String("name")
@@ -86,18 +87,19 @@ func Exec(context *cli.Context) error {
 		return err
 	}
 
-	if err := os.Setenv(ENV_CONTAINER_EXEC_COMMAND, command); err != nil {
-		return fmt.Errorf("set env %s failed, error:%s\n", ENV_CONTAINER_EXEC_COMMAND, err.Error())
+	read, write, err := util.NewPipe()
+	if err != nil {
+		return fmt.Errorf("create pipe failed, error:%s\n", err.Error())
+	}
+	if _, err := write.WriteString(fmt.Sprintf("%d;%s", information.Pid, command)); err != nil {
+		return fmt.Errorf("write pid:%d, command:%s; to pipe failed\n", information.Pid, command)
 	}
 
-	if err := os.Setenv(ENV_CONTAINER_PID, strconv.Itoa(information.Pid)); err != nil {
-		return fmt.Errorf("set env %s failed, error:%s\n", ENV_CONTAINER_PID, err.Error())
-	}
-
-	cmd := exec.Command("/proc/self/exe", "exec")
+	cmd := exec.Command("/proc/self/exe", "exec", "-child")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
+	cmd.ExtraFiles = append(cmd.ExtraFiles, read)
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("run self failed, error:%s\n", err.Error())
