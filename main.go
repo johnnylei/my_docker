@@ -122,7 +122,7 @@ func main() {
 				},
 			},
 			Action: func(context *cli.Context) error {
-				return container.Logs(context)
+				return container.Stop(context)
 			},
 		},
 	}

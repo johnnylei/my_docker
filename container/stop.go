@@ -20,7 +20,7 @@ func Stop(context *cli.Context) error  {
 	process := &os.Process{
 		Pid:information.Pid,
 	}
-	
+
 	if err := process.Kill(); err != nil {
 		return fmt.Errorf("kill process %d failed, err:%s", process.Pid, err.Error())
 	}
