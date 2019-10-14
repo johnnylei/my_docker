@@ -14,7 +14,8 @@ package container
 #define BUFFER_SIZE 256
 #define LEN(a) sizeof(a)/sizeof(a[0])
 
-__attribute__((constructor)) void enter_namespace(void) {
+__attribute__((constructor)) int enter_namespace(void) {
+	printf("enter namespace running");
 	char * pid;
 	char * command;
 	pid = getenv("ENV_CONTAINER_PID");
@@ -67,7 +68,7 @@ import (
 
 func Exec(context *cli.Context) error {
 	if os.Getenv(ENV_CONTAINER_PID) != "" {
-		fmt.Printf("%s runnig", os.Getenv(ENV_CONTAINER_EXEC_COMMAND))
+		fmt.Printf("%s runnig\n", os.Getenv(ENV_CONTAINER_EXEC_COMMAND))
 		return nil
 	}
 
