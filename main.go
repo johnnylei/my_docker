@@ -7,18 +7,9 @@ import (
 	"os"
 )
 
-//
 //func main() {
-//	containerInformation := &container.ContainerInformation{
-//		Pid: 1,
-//		Id: "xxx",
-//		Name: "namexxx",
-//		InitCommand: "init command",
-//		Status: container.STATUS_RUNING,
-//		CreatedTime: time.Now().Format("2006-01-02 15:04:05"),
-//	}
-//	InformationBytes, _ := json.Marshal(containerInformation)
-//	log.Println(string(InformationBytes))
+//	fmt.Printf("%s\n", string(1))
+//	fmt.Printf("%s\n", strconv.Itoa(100))
 //}
 
 func main() {
@@ -123,6 +114,17 @@ func main() {
 			},
 			Action: func(context *cli.Context) error {
 				return container.Stop(context)
+			},
+		},
+		{
+			Name: "exec",
+			Flags:[]cli.Flag{
+				cli.StringFlag{
+					Name: "name",
+				},
+			},
+			Action: func(context *cli.Context) error {
+				return container.Exec(context)
 			},
 		},
 	}

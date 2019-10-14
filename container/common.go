@@ -10,4 +10,6 @@ var (
 	LogFileName string = "log.log"
 	ErrorLogFileName string = "error.log"
 	DefaultContainerInformationLocation string = "/var/run/mydocker/"
+	ENV_CONTAINER_PID string = "ENV_CONTAINER_PID"
+	ENV_CONTAINER_EXEC_COMMAND string = "ENV_CONTAINER_EXEC_COMMAND"
 )

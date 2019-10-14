@@ -19,8 +19,9 @@
 - unshare: 使当前进程退出指定类型的namespace，并加入到新创建的namespace（相当于创建并加入新的namespace）
 
 ```
-ls -l /proc/$$/ns #查看ns信息
-pstree -pl #查看树装进程图
+$ ls -l /proc/$$/ns #查看ns信息, 查看发现ns下面都是lrwxrwxrwx, 为link文件
+$ readlink /proc/$$/ns/ipc #读取link文件内容, 隔离以后link文件的恩内容与系统其它进程使用的ns就会不一样
+$ pstree -pl #查看树装进程图
 ```
 
 ### UTS
@@ -78,3 +79,14 @@ $ ps -ef
 
 ### network
 网络隔离
+
+## linux api
+[原文链接](https://www.cnblogs.com/sparkdev/p/9365405.html)
+### clone()
+我们可以通过 clone() 在创建新进程的同时创建 namespace。clone() 在 C 语言库中的声明如下：
+```cassandraql
+/* Prototype for the glibc wrapper function */
+#define _GNU_SOURCE
+#include <sched.h>
+int clone(int (*fn)(void *), void *child_stack, int flags, void *arg);
+```
