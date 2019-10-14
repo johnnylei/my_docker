@@ -55,8 +55,7 @@ __attribute__((constructor)) int enter_namespace(void) {
 	return 0;
 }
  */
-
-import "C"
+ import "C"
 import (
 	"fmt"
 	"github.com/urfave/cli"
