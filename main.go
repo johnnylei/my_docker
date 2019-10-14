@@ -103,6 +103,17 @@ func main() {
 				return container.Ps(context)
 			},
 		},
+		{
+			Name: "logs",
+			Flags:[]cli.Flag{
+				cli.StringFlag{
+					Name: "name",
+				},
+			},
+			Action: func(context *cli.Context) error {
+				return container.Logs(context)
+			},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

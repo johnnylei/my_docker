@@ -4,8 +4,33 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"os"
+	"os/exec"
 	"path"
 )
+
+func Logs(context *cli.Context) error  {
+	containerName := context.String("name")
+	if containerName == "" {
+		return fmt.Errorf("contianer name should not be empty")
+	}
+
+	LogFileName, errorLogFileName := GetLogPath(containerName)
+	if _, err := os.Stat(LogFileName); err != nil {
+		return fmt.Errorf("logfile %s is invalid, error:%s", LogFileName, err.Error())
+	}
+
+	cmd := exec.Command("tail", "-n", "10", LogFileName)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("tail execute failed; err :%s", err.Error())
+	}
+
+	fmt.Printf("for more information please visit file:%s, and error messag please visit file", LogFileName, errorLogFileName)
+	return nil
+}
+
+func GetLogPath(ContainerName string) (string, string) {
+	return path.Join(DefaultContainerInformationLocation, ContainerName, LogFileName), path.Join(DefaultContainerInformationLocation, ContainerName, ErrorLogFileName)
+}
 
 func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
 	if _, err := os.Stat(DefaultContainerInformationLocation); os.IsNotExist(err) {
