@@ -68,6 +68,7 @@ __attribute__((constructor)) int enter_namespace(void) {
 func Exec(context *cli.Context) error {
 	if context.Bool("child") {
 		for {
+			fmt.Printf("pid:%d\n", os.Getpid())
 			time.Sleep(10)
 		}
 	}
