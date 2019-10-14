@@ -23,8 +23,9 @@ func Logs(context *cli.Context) error  {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("tail execute failed; err :%s", err.Error())
 	}
+	cmd.Stdout = os.Stdout
 
-	fmt.Printf("for more information please visit file:%s, and error messag please visit file", LogFileName, errorLogFileName)
+	fmt.Printf("for more information please visit file:%s, and error messag please visit file: %s", LogFileName, errorLogFileName)
 	return nil
 }
 
