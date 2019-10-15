@@ -48,7 +48,7 @@ func DestroyContainerFileSystem(path string, name string) error  {
 	}
 
 	containerPath := fmt.Sprintf("%s/%s", path, name)
-	if err := os.Remove(containerPath); err != nil {
+	if err := exec.Command("rm", "-rf", containerPath).Run(); err != nil {
 		return fmt.Errorf("remove %s failed; error:%s\n", containerPath, err.Error())
 	}
 
