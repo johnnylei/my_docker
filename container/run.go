@@ -29,7 +29,7 @@ func Run(c *cli.Context) error  {
 		return err
 	}
 
-	if err := InitContainerFilesystem(WORK_SPACE_ROOT, c); err != nil {
+	if err := InitContainerFilesystem(c); err != nil {
 		return err
 	}
 
@@ -124,12 +124,8 @@ func BuildInitArgs(c *cli.Context) []string  {
 }
 
 
-func CreateImageLayer(path string, imageName string) (string, error)  {
-	if path == "" {
-		return "", fmt.Errorf("create image layer path should not be empty")
-	}
-
-	imageTarPath := fmt.Sprintf("%s/busybox.tar", path)
+func CreateImageLayer(imageName string) (string, error)  {
+	imageTarPath := fmt.Sprintf("%s/%s.tar", IMAGE_REGISTRY, imageName)
 	_, err := os.Stat(imageTarPath)
 	if os.IsNotExist(err) {
 		return "", fmt.Errorf("there is not image file: %s", imageTarPath)
@@ -137,7 +133,7 @@ func CreateImageLayer(path string, imageName string) (string, error)  {
 		return "", fmt.Errorf("tar file %s error, message:%s\n", imageTarPath, err.Error())
 	}
 
-	imagePath := fmt.Sprintf("%s/%s", path, imageName)
+	imagePath := fmt.Sprintf("%s/%s", IMAGE_REGISTRY, imageName)
 	_, err = os.Stat(imagePath)
 	if os.IsNotExist(err) {
 		if err := os.Mkdir(imagePath, 0777); err != nil {
@@ -154,16 +150,12 @@ func CreateImageLayer(path string, imageName string) (string, error)  {
 	return imagePath, nil
 }
 
-func CreateContainerLayer(path string, name string) (string, error)  {
-	if path == "" {
-		return "", fmt.Errorf("create container layer path should not be empty")
-	}
-
+func CreateContainerLayer(name string) (string, error)  {
 	if name == "" {
 		return "", fmt.Errorf("create container layer container name should not be empty")
 	}
 
-	containerPath := fmt.Sprintf("%s/%s", path, name)
+	containerPath := fmt.Sprintf("%s/%s", WORK_SPACE_ROOT, name)
 	_, err := os.Stat(containerPath)
 	if os.IsNotExist(err) {
 		if err := os.Mkdir(containerPath, 0777); err != nil {
@@ -174,24 +166,19 @@ func CreateContainerLayer(path string, name string) (string, error)  {
 	return containerPath, nil
 }
 
-func CreateContainerMountLayer(path string, name string) (string, error)  {
-	if path == "" {
-		return "", fmt.Errorf("create container mount layer path should not be empty")
-	}
-
+func CreateContainerMountLayer(name string) (string, error)  {
 	if name == "" {
 		return "", fmt.Errorf("create container mount layer container name should not be empty")
 	}
 
-	mountPath := fmt.Sprintf("%s/mnt", path)
-	_, err := os.Stat(mountPath)
+	_, err := os.Stat(CONTAINER_FILE_SYSTEM_MOUNT_ROOT)
 	if os.IsNotExist(err) {
-		if err := os.Mkdir(mountPath, 0777); err != nil {
-			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+		if err := os.Mkdir(CONTAINER_FILE_SYSTEM_MOUNT_ROOT, 0777); err != nil {
+			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), CONTAINER_FILE_SYSTEM_MOUNT_ROOT)
 		}
 	}
 
-	mountPath = fmt.Sprintf("%s/%s", mountPath, name)
+	mountPath := fmt.Sprintf("%s/%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
 	_, err = os.Stat(mountPath)
 	if os.IsNotExist(err) {
 		if err := os.Mkdir(mountPath, 0777); err != nil {
@@ -202,27 +189,23 @@ func CreateContainerMountLayer(path string, name string) (string, error)  {
 	return mountPath, nil
 }
 
-func InitContainerFilesystem(path string, c *cli.Context) error  {
-	if path == "" {
-		return fmt.Errorf("init container file system; path should not be empty")
-	}
-
+func InitContainerFilesystem(c *cli.Context) error  {
 	name := c.String("name")
 	if name == "" {
 		return fmt.Errorf("init container file system; container name should not be empty")
 	}
 
-	imageLayerPath, err := CreateImageLayer(path, "busybox")
+	imageLayerPath, err := CreateImageLayer(c.String("image"))
 	if err != nil {
 		return err
 	}
 
-	containerLayerPath, err := CreateContainerLayer(path, name)
+	containerLayerPath, err := CreateContainerLayer(name)
 	if err != nil {
 		return err
 	}
 
-	containerMountPath, err := CreateContainerMountLayer(path, name)
+	containerMountPath, err := CreateContainerMountLayer(name)
 	if err != nil {
 		return err
 	}
@@ -235,18 +218,14 @@ func InitContainerFilesystem(path string, c *cli.Context) error  {
 		return fmt.Errorf("InitContainerFilesystem mount error, %s", err.Error())
 	}
 
-	if err := initContainerVolume(path, c); err != nil {
+	if err := initContainerVolume(c); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func initContainerVolume(path string, c *cli.Context) error  {
-	if path == "" {
-		return fmt.Errorf("init container volume; path should not be empty")
-	}
-
+func initContainerVolume(c *cli.Context) error  {
 	volume := c.String("v")
 	if volume == "" {
 		return nil
@@ -261,7 +240,7 @@ func initContainerVolume(path string, c *cli.Context) error  {
 		return fmt.Errorf("source mount not exist; %s, %v", mounts[0], []byte(mounts[0]))
 	}
 
-	destinationMount := fmt.Sprintf("%s/mnt/%s%s", path, c.String("name"), mounts[1])
+	destinationMount := fmt.Sprintf("%s/%s%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, c.String("name"), mounts[1])
 
 	if err := exec.Command("mkdir", "-p", destinationMount).Run(); err != nil {
 		return fmt.Errorf("mkdir %s failed", destinationMount)

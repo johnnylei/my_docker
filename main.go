@@ -38,6 +38,10 @@ func main() {
 					Name: "name",
 				},
 				cli.StringFlag{
+					Name: "image",
+					Value: "busybox",
+				},
+				cli.StringFlag{
 					Name: "v",
 					Usage: "volume mount",
 				},
