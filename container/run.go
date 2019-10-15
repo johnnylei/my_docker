@@ -70,7 +70,7 @@ func Run(c *cli.Context) error  {
 		Id: uid,
 		Name: c.String("name"),
 		InitCommand: containerInitCommand,
-		Status: STATUS_RUNING,
+		Status: common.STATUS_RUNING,
 		CreatedTime: time.Now().Format("2006-01-02 15:04:05"),
 	}
 	if containerInformation.CheckExist() {
