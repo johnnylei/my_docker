@@ -120,6 +120,7 @@ __attribute__((constructor)) int enter_namespace(void) {
 	 "github.com/johnnylei/my_docker/common"
 	 "github.com/johnnylei/my_docker/util"
 	 "github.com/urfave/cli"
+	 "io/ioutil"
 	 "os"
 	 "os/exec"
 	 "strconv"
@@ -162,9 +163,25 @@ func Exec(context *cli.Context) error {
 	if err := os.Setenv(common.EXEC_PARENT_PROCESS_ID, strconv.Itoa(os.Getpid())); err != nil {
 		return fmt.Errorf("set env EXEC_PARENT_PROCESS_ID %d failed, error:%s\n", cmd.Process.Pid, err.Error());
 	}
+
+	containerEnv, err := getEnvFromPid(information.Pid)
+	if err == nil && containerEnv != nil {
+		cmd.Env = append(os.Environ(), containerEnv...)
+	}
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("run self failed, error:%s\n", err.Error())
 	}
 
 	return nil
+}
+
+func getEnvFromPid(pid int) ([]string, error)  {
+	envFilePath := fmt.Sprintf("/proc/%d/environ", pid)
+	buffer, err := ioutil.ReadFile(envFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("read %s failed, error:%s\n", envFilePath, err.Error())
+	}
+
+	return strings.Split(string(buffer), "\u0000"), nil
 }
