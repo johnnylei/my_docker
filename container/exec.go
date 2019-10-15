@@ -68,12 +68,12 @@ void destroyTwoDimensionalArray(char ** arr) {
 }
 
 __attribute__((constructor)) int enter_namespace(void) {
-	char * exec_process_id = getenv("EXEC_PROCESS_ID");
-	if (NULL == exec_process_id) {
+	char * exec_parent_process_id = getenv("EXEC_PARENT_PROCESS_ID");
+	if (NULL == exec_parent_process_id) {
 		return -1;
 	}
 
-	if (0 != strcmp(exec_process_id, int_to_string(getpid()))) {
+	if (0 != strcmp(exec_parent_process_id, int_to_string(getppid()))) {
 		return -1;
 	}
 
@@ -160,20 +160,16 @@ func Exec(context *cli.Context) error {
 	}
 
 	cmd := exec.Command("/proc/self/exe", "exec", "-child")
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("start self failed, error:%s\n", err.Error())
-	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.ExtraFiles = append(cmd.ExtraFiles, read)
-
-	if err := os.Setenv(EXEC_PROCESS_ID, strconv.Itoa(cmd.Process.Pid)); err != nil {
-		return fmt.Errorf("set env EXEC_PROCESS_ID %d failed, error:%s\n", cmd.Process.Pid, err.Error());
+	if err := os.Setenv(EXEC_PARENT_PROCESS_ID, strconv.Itoa(os.Getpid())); err != nil {
+		return fmt.Errorf("set env EXEC_PARENT_PROCESS_ID %d failed, error:%s\n", cmd.Process.Pid, err.Error());
+	}
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("run self failed, error:%s\n", err.Error())
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("running self failed, error:%s\n", err.Error())
-	}
 	return nil
 }

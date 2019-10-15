@@ -12,5 +12,5 @@ var (
 	DefaultContainerInformationLocation string = "/var/run/mydocker/"
 	ENV_CONTAINER_PID string = "ENV_CONTAINER_PID"
 	ENV_CONTAINER_EXEC_COMMAND string = "ENV_CONTAINER_EXEC_COMMAND"
-	EXEC_PROCESS_ID string = "EXEC_PROCESS_ID"
+	EXEC_PARENT_PROCESS_ID string = "EXEC_PARENT_PROCESS_ID"
 )
