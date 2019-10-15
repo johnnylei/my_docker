@@ -130,21 +130,27 @@ func CreateImageLayer(path string, imageName string) (string, error)  {
 	}
 
 	imageTarPath := fmt.Sprintf("%s/busybox.tar", path)
-	if _, err := os.Stat(imageTarPath); os.IsNotExist(err) {
+	_, err := os.Stat(imageTarPath)
+	if os.IsNotExist(err) {
 		return "", fmt.Errorf("there is not image file: %s", imageTarPath)
+	}else if err != nil {
+		return "", fmt.Errorf("tar file %s error, message:%s\n", imageTarPath, err.Error())
 	}
 
 	imagePath := fmt.Sprintf("%s/%s", path, imageName)
-	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+	_, err = os.Stat(imagePath)
+	if os.IsNotExist(err) {
 		if err := os.Mkdir(imagePath, 0777); err != nil {
 			return "", fmt.Errorf("mkdir %s failed", imagePath)
 		}
+	}else if err != nil {
+		return "", fmt.Errorf("image file %s error, message:%s\n", imagePath, err.Error())
 	}
+
 	command := exec.Command("tar", "-xvf", imageTarPath, "-C", imagePath)
 	if err := command.Run(); err != nil {
 		return "", fmt.Errorf("tar failed: %s; tar:%s, target:%s", err.Error(), imageTarPath, imagePath)
 	}
-
 	return imagePath, nil
 }
 
@@ -158,8 +164,11 @@ func CreateContainerLayer(path string, name string) (string, error)  {
 	}
 
 	containerPath := fmt.Sprintf("%s/%s", path, name)
-	if err := os.Mkdir(containerPath, 0777); !os.IsExist(err) {
-		return "", fmt.Errorf("create container layer, create container path failed; %s", err.Error())
+	_, err := os.Stat(containerPath)
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(containerPath, 0777); err != nil {
+			return "", fmt.Errorf("create container layer, create container path failed; %s", err.Error())
+		}
 	}
 
 	return containerPath, nil
@@ -175,13 +184,19 @@ func CreateContainerMountLayer(path string, name string) (string, error)  {
 	}
 
 	mountPath := fmt.Sprintf("%s/mnt", path)
-	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
-		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+	_, err := os.Stat(mountPath)
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(mountPath, 0777); err != nil {
+			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+		}
 	}
 
 	mountPath = fmt.Sprintf("%s/%s", mountPath, name)
-	if err := os.Mkdir(mountPath, 0777); !os.IsExist(err) {
-		return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+	_, err = os.Stat(mountPath)
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(mountPath, 0777); err != nil {
+			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+		}
 	}
 
 	return mountPath, nil
