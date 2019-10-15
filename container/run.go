@@ -59,6 +59,11 @@ func Run(c *cli.Context) error  {
 		return err
 	}
 
+	envSlice := c.StringSlice("env")
+	if envSlice != nil {
+		cmd.Env = append(os.Environ(), envSlice...)
+	}
+
 	if err := cmd.Start(); err != nil {
 		return err
 	}

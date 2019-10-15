@@ -38,6 +38,10 @@ func main() {
 				cli.StringFlag{
 					Name: "name",
 				},
+				cli.StringSliceFlag{
+					Name: "env",
+					Usage: "set environment",
+				},
 				cli.StringFlag{
 					Name: "image",
 					Value: "busybox",
