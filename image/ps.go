@@ -10,7 +10,7 @@ import (
 )
 
 func Ps(context *cli.Context) error  {
-	fmt.Printf("name\t\tpath\t\tcontainers")
+	fmt.Printf("name\t\tpath\t\tcontainers\n")
 	if err := filepath.Walk(common.IMAGE_REGISTRY, func(path string, info os.FileInfo, err error) error {
 		if !strings.Contains(info.Name(), ".json") {
 			return nil
@@ -21,7 +21,7 @@ func Ps(context *cli.Context) error  {
 			return nil
 		}
 
-		fmt.Printf("%s\t\t%s\t\t%s", imageInformation.Name, imageInformation.Path, strings.Join(func() []string{
+		fmt.Printf("%s\t\t%s\t\t%s\n", imageInformation.Name, imageInformation.Path, strings.Join(func() []string{
 			if len(imageInformation.Containers) == 0 {
 				return nil
 			}
