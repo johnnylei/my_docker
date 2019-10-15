@@ -15,12 +15,6 @@ package container
 #define LEN(a) sizeof(a)/sizeof(a[0])
 #define STRLEN(str) strlen(str) + 1
 
-char * int_to_string(int number) {
-    char * ret;
-    sprintf(ret, "%d", number);
-    return ret;
-}
-
 char ** split(char * source, const char * delimiter) {
 	char ** ret = malloc(sizeof(char *));
 	char * item;
@@ -73,7 +67,7 @@ __attribute__((constructor)) int enter_namespace(void) {
 		return -1;
 	}
 
-	if (0 != strcmp(exec_parent_process_id, int_to_string(getppid()))) {
+	if (atoi(exec_parent_process_id) != getppid()) {
 		return -1;
 	}
 
