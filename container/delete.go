@@ -40,8 +40,11 @@ func DestroyContainerFileSystem(path string, name string) error  {
 		return fmt.Errorf("umount %s failed; error:%s\n", mountContainerPath, err.Error())
 	}
 
-	if err := os.Remove(mountContainerPath); !os.IsNotExist(err) {
-		return fmt.Errorf("remove %s failed; error:%s\n", mountContainerPath, err.Error())
+	_, err := os.Stat(mountContainerPath)
+	if err == nil {
+		if err := os.Remove(mountContainerPath); err != nil {
+			return fmt.Errorf("remove %s failed; error:%s\n", mountContainerPath, err.Error())
+		}
 	}
 
 	containerPath := fmt.Sprintf("%s/%s", path, name)
