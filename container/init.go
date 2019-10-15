@@ -56,8 +56,11 @@ func PivotRoot(root string) error  {
 	}
 
 	pivotDir := filepath.Join(root, ".pivot_root")
-	if err := os.Mkdir(pivotDir, 0777); !os.IsExist(err) {
-		return fmt.Errorf("mkdir pivotDir err:%s", err.Error())
+	_, err := os.Stat(pivotDir)
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(pivotDir, 0777); err != nil {
+			return fmt.Errorf("mkdir pivotDir err:%s", err.Error())
+		}
 	}
 
 	if err := syscall.PivotRoot(root, pivotDir); err != nil {
