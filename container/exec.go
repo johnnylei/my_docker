@@ -63,15 +63,13 @@ void destroyTwoDimensionalArray(char ** arr) {
 
 __attribute__((constructor)) int enter_namespace(void) {
 	char * read_buffer = malloc(BUFFER_SIZE);
-	ret = read(3, read_buffer, BUFFER_SIZE);
+	int ret = read(3, read_buffer, BUFFER_SIZE);
 	if (ret == -1) {
-		printf("read message failed, error message:%s\n", strerror(errno));
 		return -1;
 	}
 
 	char ** exec_message = split(read_buffer, ";;");
 	free(read_buffer);
-	printf("pid:%s; command:%s\n", exec_message[0], exec_message[1]);
 	char *pid = exec_message[0];
 	char *command = exec_message[1];
 
