@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"github.com/johnnylei/my_docker/common"
 	"github.com/urfave/cli"
 	"os"
 	"os/exec"
@@ -13,11 +14,11 @@ func Delete(c *cli.Context) error  {
 		return fmt.Errorf("container name should not be null")
 	}
 
-	information, err := LoadContainerInformation(name)
+	information, err := common.LoadContainerInformation(name)
 	if err != nil {
 		return err
 	}
-	if information.Status == STATUS_RUNING {
+	if information.Status == common.STATUS_RUNING {
 		return fmt.Errorf("%s is running could not delete\n", information.Name)
 	}
 
@@ -33,7 +34,7 @@ func Delete(c *cli.Context) error  {
 }
 
 func DestroyContainerFileSystem(name string) error  {
-	mountContainerPath := fmt.Sprintf("%s/%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
+	mountContainerPath := fmt.Sprintf("%s/%s", common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
 	cmd := exec.Command("umount", mountContainerPath)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("umount %s failed; error:%s\n", mountContainerPath, err.Error())
@@ -46,7 +47,7 @@ func DestroyContainerFileSystem(name string) error  {
 		}
 	}
 
-	containerPath := fmt.Sprintf("%s/%s", WORK_SPACE_ROOT, name)
+	containerPath := fmt.Sprintf("%s/%s", common.WORK_SPACE_ROOT, name)
 	if err := exec.Command("rm", "-rf", containerPath).Run(); err != nil {
 		return fmt.Errorf("remove %s failed; error:%s\n", containerPath, err.Error())
 	}

@@ -1,9 +1,8 @@
-package image
+package common
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/johnnylei/my_docker/container"
 	"io/ioutil"
 	"os"
 )
@@ -16,12 +15,12 @@ func InitImage(Name string) *Image  {
 
 	return &Image{
 		Name:Name,
-		Path:fmt.Sprintf("%s/%s.json", container.IMAGE_REGISTRY, Name),
+		Path:fmt.Sprintf("%s/%s.json", IMAGE_REGISTRY, Name),
 	}
 }
 
 func LoadImage(Name string) (*Image, error)  {
-	imageInformationPath := fmt.Sprintf("%s/%s.json", container.IMAGE_REGISTRY, Name)
+	imageInformationPath := fmt.Sprintf("%s/%s.json", IMAGE_REGISTRY, Name)
 	return LoadImageFromFile(imageInformationPath)
 }
 
@@ -41,11 +40,11 @@ func LoadImageFromFile(imageInformationPath string) (*Image,  error)  {
 type Image struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
-	Containers []*container.ContainerInformation `json:"containers"`
+	Containers []*ContainerInformation `json:"containers"`
 }
 
 func (image *Image) Record() error  {
-	InformationFile := fmt.Sprintf("%s/%s.json", container.IMAGE_REGISTRY, image.Name)
+	InformationFile := fmt.Sprintf("%s/%s.json", IMAGE_REGISTRY, image.Name)
 	if _, err := os.Stat(InformationFile); os.IsNotExist(err) {
 		if _, err := os.Create(InformationFile); err != nil {
 			return fmt.Errorf("create %s failed, err:%s", InformationFile, err.Error())
@@ -70,7 +69,7 @@ func (image *Image) Record() error  {
 	return nil
 }
 
-func (image *Image) AppendContainer(container *container.ContainerInformation)  {
+func (image *Image) AppendContainer(container *ContainerInformation)  {
 	for index, item := range image.Containers {
 		if item.Name == container.Name {
 			image.Containers[index] = container

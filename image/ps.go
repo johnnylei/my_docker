@@ -2,7 +2,7 @@ package image
 
 import (
 	"fmt"
-	"github.com/johnnylei/my_docker/container"
+	"github.com/johnnylei/my_docker/common"
 	"github.com/urfave/cli"
 	"os"
 	"path/filepath"
@@ -11,12 +11,12 @@ import (
 
 func Ps(context *cli.Context) error  {
 	fmt.Printf("name\t\tpath\t\tcontainers")
-	if err := filepath.Walk(container.IMAGE_REGISTRY, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(common.IMAGE_REGISTRY, func(path string, info os.FileInfo, err error) error {
 		if !strings.Contains(info.Name(), ".json") {
 			return nil
 		}
 
-		imageInformation, err := LoadImageFromFile(path)
+		imageInformation, err := common.LoadImageFromFile(path)
 		if err != nil {
 			return nil
 		}
@@ -35,7 +35,7 @@ func Ps(context *cli.Context) error  {
 		}(), ";"))
 		return nil
 	}); err != nil {
-		return fmt.Errorf("read %s failed; error %s", container.IMAGE_REGISTRY, err.Error())
+		return fmt.Errorf("read %s failed; error %s", common.IMAGE_REGISTRY, err.Error())
 	}
 
 	return nil

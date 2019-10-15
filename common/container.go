@@ -1,4 +1,4 @@
-package container
+package common
 
 import (
 	"encoding/json"
@@ -11,6 +11,10 @@ import (
 
 func LoadContainerInformation(Name string) (*ContainerInformation, error)  {
 	informationPath := path.Join(DefaultContainerInformationLocation, Name, InformationFileName)
+	return LoadContainerInformationFormFIle(informationPath)
+}
+
+func LoadContainerInformationFormFIle(informationPath string) (*ContainerInformation, error)  {
 	informationBytes, err := ioutil.ReadFile(informationPath)
 	if err != nil {
 		return nil, fmt.Errorf("read %s failed, error: %s\n", informationPath, err.Error())
@@ -34,7 +38,7 @@ type ContainerInformation struct {
 }
 
 func (information *ContainerInformation) GetPath() string  {
-	if information.Path != nil {
+	if information.Path != "" {
 		return information.Path
 	}
 

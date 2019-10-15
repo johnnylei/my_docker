@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"github.com/johnnylei/my_docker/common"
 	"github.com/urfave/cli"
 	"os"
 )
@@ -12,7 +13,7 @@ func Stop(context *cli.Context) error  {
 		return fmt.Errorf("container name should not be empty")
 	}
 
-	information, err := LoadContainerInformation(containerName)
+	information, err := common.LoadContainerInformation(containerName)
 	if err != nil {
 		return err
 	}

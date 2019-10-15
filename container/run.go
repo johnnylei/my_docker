@@ -2,7 +2,7 @@ package container
 
 import (
 	"fmt"
-	"github.com/johnnylei/my_docker/image"
+	"github.com/johnnylei/my_docker/common"
 	"github.com/johnnylei/my_docker/subsystem"
 	"github.com/johnnylei/my_docker/util"
 	"github.com/urfave/cli"
@@ -65,7 +65,7 @@ func Run(c *cli.Context) error  {
 
 	uid := util.Uid()
 	fmt.Printf("uid:%s\n", uid)
-	containerInformation := &ContainerInformation{
+	containerInformation := &common.ContainerInformation{
 		Pid: cmd.Process.Pid,
 		Id: uid,
 		Name: c.String("name"),
@@ -79,7 +79,7 @@ func Run(c *cli.Context) error  {
 	if err := containerInformation.Record(); err != nil {
 		return err
 	}
-	imageObject := image.InitImage(c.String("image"))
+	imageObject := common.InitImage(c.String("image"))
 	imageObject.AppendContainer(containerInformation)
 	if err := imageObject.Record(); err != nil {
 		return err
@@ -121,7 +121,7 @@ func BuildInitArgs(c *cli.Context) []string  {
 		"-name",
 		c.String("name"),
 		"-root",
-		fmt.Sprintf("%s/%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, c.String("name")),
+		fmt.Sprintf("%s/%s", common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT, c.String("name")),
 	}
 	if c.String("v") != "" {
 		ret = append(ret, "-v", c.String("v"))
@@ -133,7 +133,7 @@ func BuildInitArgs(c *cli.Context) []string  {
 
 
 func CreateImageLayer(imageName string) (string, error)  {
-	imageTarPath := fmt.Sprintf("%s/%s.tar", IMAGE_REGISTRY, imageName)
+	imageTarPath := fmt.Sprintf("%s/%s.tar", common.IMAGE_REGISTRY, imageName)
 	_, err := os.Stat(imageTarPath)
 	if os.IsNotExist(err) {
 		return "", fmt.Errorf("there is not image file: %s", imageTarPath)
@@ -141,7 +141,7 @@ func CreateImageLayer(imageName string) (string, error)  {
 		return "", fmt.Errorf("tar file %s error, message:%s\n", imageTarPath, err.Error())
 	}
 
-	imagePath := fmt.Sprintf("%s/%s", IMAGE_REGISTRY, imageName)
+	imagePath := fmt.Sprintf("%s/%s", common.IMAGE_REGISTRY, imageName)
 	_, err = os.Stat(imagePath)
 	if os.IsNotExist(err) {
 		if err := os.Mkdir(imagePath, 0777); err != nil {
@@ -163,7 +163,7 @@ func CreateContainerLayer(name string) (string, error)  {
 		return "", fmt.Errorf("create container layer container name should not be empty")
 	}
 
-	containerPath := fmt.Sprintf("%s/%s", WORK_SPACE_ROOT, name)
+	containerPath := fmt.Sprintf("%s/%s", common.WORK_SPACE_ROOT, name)
 	_, err := os.Stat(containerPath)
 	if os.IsNotExist(err) {
 		if err := os.Mkdir(containerPath, 0777); err != nil {
@@ -179,18 +179,20 @@ func CreateContainerMountLayer(name string) (string, error)  {
 		return "", fmt.Errorf("create container mount layer container name should not be empty")
 	}
 
-	_, err := os.Stat(CONTAINER_FILE_SYSTEM_MOUNT_ROOT)
+	_, err := os.Stat(common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT)
 	if os.IsNotExist(err) {
-		if err := os.Mkdir(CONTAINER_FILE_SYSTEM_MOUNT_ROOT, 0777); err != nil {
-			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), CONTAINER_FILE_SYSTEM_MOUNT_ROOT)
+		if err := os.Mkdir(common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT, 0777); err != nil {
+			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s",
+				err.Error(), common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT)
 		}
 	}
 
-	mountPath := fmt.Sprintf("%s/%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
+	mountPath := fmt.Sprintf("%s/%s", common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
 	_, err = os.Stat(mountPath)
 	if os.IsNotExist(err) {
 		if err := os.Mkdir(mountPath, 0777); err != nil {
-			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s", err.Error(), mountPath)
+			return "", fmt.Errorf("create container mount layer, create container mount path failed; %s; %s",
+				err.Error(), mountPath)
 		}
 	}
 
@@ -248,7 +250,7 @@ func initContainerVolume(c *cli.Context) error  {
 		return fmt.Errorf("source mount not exist; %s, %v", mounts[0], []byte(mounts[0]))
 	}
 
-	destinationMount := fmt.Sprintf("%s/%s%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, c.String("name"), mounts[1])
+	destinationMount := fmt.Sprintf("%s/%s%s", common.CONTAINER_FILE_SYSTEM_MOUNT_ROOT, c.String("name"), mounts[1])
 
 	if err := exec.Command("mkdir", "-p", destinationMount).Run(); err != nil {
 		return fmt.Errorf("mkdir %s failed", destinationMount)
@@ -257,7 +259,8 @@ func initContainerVolume(c *cli.Context) error  {
 	log.Printf("mounting volume: source:%s; destination:%s", mounts[0], destinationMount)
 	mountOptions := fmt.Sprintf("dirs=%s", mounts[0])
 	if err := exec.Command("mount", "-t", "aufs", "-o", mountOptions, "none", destinationMount).Run(); err != nil {
-		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s", mounts[0], destinationMount)
+		return fmt.Errorf("init Cointainer volumen failed; mount failed; source:%s; destination:%s",
+			mounts[0], destinationMount)
 	}
 
 	return nil

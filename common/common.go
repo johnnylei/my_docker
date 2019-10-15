@@ -1,4 +1,4 @@
-package container
+package common
 
 var (
 	WORK_SPACE_ROOT string = "/root/my_docker_workspace"
@@ -18,3 +18,4 @@ var (
 	CONTAINER_FILE_SYSTEM_ROOT string = "/root/my_docker_workspace/containers"
 	BUFFER_SIZE int = 1024
 )
+

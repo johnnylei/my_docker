@@ -117,6 +117,7 @@ __attribute__((constructor)) int enter_namespace(void) {
  import "C" // import "c" 首先必须要独立写，其次与c代码之间不能更有空格
  import (
 	 "fmt"
+	 "github.com/johnnylei/my_docker/common"
 	 "github.com/johnnylei/my_docker/util"
 	 "github.com/urfave/cli"
 	 "os"
@@ -140,7 +141,7 @@ func Exec(context *cli.Context) error {
 		return fmt.Errorf("command should not be empty")
 	}
 
-	information, err := LoadContainerInformation(containerName)
+	information, err := common.LoadContainerInformation(containerName)
 	if err != nil {
 		return err
 	}
@@ -158,7 +159,7 @@ func Exec(context *cli.Context) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.ExtraFiles = append(cmd.ExtraFiles, read)
-	if err := os.Setenv(EXEC_PARENT_PROCESS_ID, strconv.Itoa(os.Getpid())); err != nil {
+	if err := os.Setenv(common.EXEC_PARENT_PROCESS_ID, strconv.Itoa(os.Getpid())); err != nil {
 		return fmt.Errorf("set env EXEC_PARENT_PROCESS_ID %d failed, error:%s\n", cmd.Process.Pid, err.Error());
 	}
 	if err := cmd.Run(); err != nil {
