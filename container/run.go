@@ -29,7 +29,7 @@ func Run(c *cli.Context) error  {
 		return err
 	}
 
-	if err := InitContainerFilesystem(WorkSpaceRoot, c); err != nil {
+	if err := InitContainerFilesystem(WORK_SPACE_ROOT, c); err != nil {
 		return err
 	}
 
@@ -113,7 +113,7 @@ func BuildInitArgs(c *cli.Context) []string  {
 		"-name",
 		c.String("name"),
 		"-root",
-		fmt.Sprintf("%s/mnt/%s", WorkSpaceRoot, c.String("name")),
+		fmt.Sprintf("%s/%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, c.String("name")),
 	}
 	if c.String("v") != "" {
 		ret = append(ret, "-v", c.String("v"))

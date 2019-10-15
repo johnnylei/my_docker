@@ -8,7 +8,6 @@ import (
 )
 
 func Delete(c *cli.Context) error  {
-	path := "/tmp"
 	name := c.String("name")
 	if name == "" {
 		return fmt.Errorf("container name should not be null")
@@ -26,15 +25,15 @@ func Delete(c *cli.Context) error  {
 		return err
 	}
 
-	if  err := DestroyContainerFileSystem(path, name); err != nil {
+	if  err := DestroyContainerFileSystem(name); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func DestroyContainerFileSystem(path string, name string) error  {
-	mountContainerPath := fmt.Sprintf("%s/mnt/%s", path, name)
+func DestroyContainerFileSystem(name string) error  {
+	mountContainerPath := fmt.Sprintf("%s/%s", CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
 	cmd := exec.Command("umount", mountContainerPath)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("umount %s failed; error:%s\n", mountContainerPath, err.Error())
@@ -47,7 +46,7 @@ func DestroyContainerFileSystem(path string, name string) error  {
 		}
 	}
 
-	containerPath := fmt.Sprintf("%s/%s", path, name)
+	containerPath := fmt.Sprintf("%s/%s", WORK_SPACE_ROOT, name)
 	if err := exec.Command("rm", "-rf", containerPath).Run(); err != nil {
 		return fmt.Errorf("remove %s failed; error:%s\n", containerPath, err.Error())
 	}

@@ -8,14 +8,13 @@ import (
 	"path"
 )
 
-const MountRoot  = "/tmp/mnt"
 func Commit(context *cli.Context) error  {
 	name := context.String("name")
 	if name == "" {
 		return fmt.Errorf("container name should not be empty")
 	}
 
-	fileSystemPath := path.Join(MountRoot, name)
+	fileSystemPath := path.Join(CONTAINER_FILE_SYSTEM_MOUNT_ROOT, name)
 	if _, err := os.Stat(fileSystemPath); err != nil {
 		return fmt.Errorf("%s error, error message:%s", fileSystemPath, err.Error())
 	}
