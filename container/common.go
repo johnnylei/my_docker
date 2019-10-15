@@ -16,4 +16,5 @@ var (
 	ENV_CONTAINER_EXEC_COMMAND string = "ENV_CONTAINER_EXEC_COMMAND"
 	EXEC_PARENT_PROCESS_ID string = "EXEC_PARENT_PROCESS_ID"
 	CONTAINER_FILE_SYSTEM_ROOT string = "/root/my_docker_workspace/containers"
+	BUFFER_SIZE int = 1024
 )

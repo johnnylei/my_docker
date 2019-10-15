@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/johnnylei/my_docker/container"
+	"github.com/johnnylei/my_docker/image"
 	"github.com/urfave/cli"
 	"log"
 	"os"
@@ -138,6 +139,17 @@ func main() {
 			},
 			Action: func(context *cli.Context) error {
 				return container.Exec(context)
+			},
+		},
+		{
+			Name:"image",
+			Subcommands:[]cli.Command{
+				{
+					Name:"ps",
+					Action: func(context *cli.Context)error {
+						return image.Ps(context)
+					},
+				},
 			},
 		},
 	}

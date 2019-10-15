@@ -30,6 +30,25 @@ type ContainerInformation struct {
 	InitCommand string `json:"init_command"`
 	Status string `json:"status"`
 	CreatedTime string `json:"created_time"`
+	Path string
+}
+
+func (information *ContainerInformation) GetPath() string  {
+	if information.Path != nil {
+		return information.Path
+	}
+
+	information.Path = path.Join(DefaultContainerInformationLocation, information.Name, InformationFileName)
+	return information.Path
+}
+
+func (information *ContainerInformation) CheckExist() bool  {
+	_, err := os.Stat(information.GetPath())
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 func (information *ContainerInformation) Record() error  {
