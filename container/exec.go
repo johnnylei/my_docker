@@ -15,6 +15,12 @@ package container
 #define LEN(a) sizeof(a)/sizeof(a[0])
 #define STRLEN(str) strlen(str) + 1
 
+char * int_to_string(int number) {
+    char * ret;
+    sprintf(ret, "%d", number);
+    return ret;
+}
+
 char ** split(char * source, const char * delimiter) {
 	char ** ret = malloc(sizeof(char *));
 	char * item;
@@ -62,6 +68,15 @@ void destroyTwoDimensionalArray(char ** arr) {
 }
 
 __attribute__((constructor)) int enter_namespace(void) {
+	char * exec_process_id = getenv("EXEC_PROCESS_ID");
+	if (NULL == exec_process_id) {
+		return -1;
+	}
+
+	if (0 != strcmp(exec_process_id, int_to_string(getpid()))) {
+		return -1;
+	}
+
 	char * read_buffer = malloc(BUFFER_SIZE);
 	int ret = read(3, read_buffer, BUFFER_SIZE);
 	if (ret == -1) {
@@ -105,13 +120,14 @@ __attribute__((constructor)) int enter_namespace(void) {
 	return 0;
 }
  */
- import "C"
+ import "C" // import "c" 首先必须要独立写，其次与c代码之间不能更有空格
  import (
 	 "fmt"
 	 "github.com/johnnylei/my_docker/util"
 	 "github.com/urfave/cli"
 	 "os"
 	 "os/exec"
+	 "strconv"
 	 "strings"
  )
 
@@ -144,14 +160,20 @@ func Exec(context *cli.Context) error {
 	}
 
 	cmd := exec.Command("/proc/self/exe", "exec", "-child")
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("start self failed, error:%s\n", err.Error())
+	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.ExtraFiles = append(cmd.ExtraFiles, read)
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("run self failed, error:%s\n", err.Error())
+	if err := os.Setenv(EXEC_PROCESS_ID, strconv.Itoa(cmd.Process.Pid)); err != nil {
+		return fmt.Errorf("set env EXEC_PROCESS_ID %d failed, error:%s\n", cmd.Process.Pid, err.Error());
 	}
 
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("running self failed, error:%s\n", err.Error())
+	}
 	return nil
 }

@@ -8,6 +8,7 @@ mount -t type -o options device dir
 $ mount -t proc none /proc # 挂载内核文件系统
 $ mount -t aufs -o=./test1=ro:./test2=rw ./root #aufs式挂载
 $ mount -t cgroup -o none,name=cgroup-test cgroup-test ./cgroup-test #挂载一个hierarchy
+$ mount -t tmpfs tmpfs /tmp/tmpfs #在/tmp/tmpfs文件夹挂载成为一个内存文件系统,这样读取/tmp/tmpfs的速度就会快
 
 # iso文件
 $ mkdir -p iso/subdir01
