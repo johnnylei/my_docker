@@ -52,6 +52,7 @@ func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
 
 	logFile := path.Join(common.DefaultContainerInformationLocation, containerName, common.LogFileName)
 	logFileResource, err := os.OpenFile(logFile, os.O_WRONLY | os.O_APPEND | os.O_CREATE, 0644)
+	defer logFileResource.Close()
 	if err != nil && !os.IsNotExist(err) {
 		return nil, nil, fmt.Errorf("open log file %s failed; error:%s", logFile, err.Error())
 	}
@@ -65,6 +66,7 @@ func InitLogFile(context *cli.Context) (*os.File, *os.File, error) {
 
 	errorLogFile := path.Join(common.DefaultContainerInformationLocation, containerName, common.ErrorLogFileName)
 	errorLogFileResource, err := os.OpenFile(errorLogFile, os.O_CREATE | os.O_APPEND | os.O_WRONLY, 0644)
+	defer errorLogFileResource.Close()
 	if err != nil && !os.IsNotExist(err) {
 		return nil, nil, fmt.Errorf("open error log file %s failed; error:%s", errorLogFile, err.Error())
 	}

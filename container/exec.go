@@ -73,6 +73,7 @@ __attribute__((constructor)) int enter_namespace(void) {
 
 	char * read_buffer = malloc(BUFFER_SIZE);
 	int ret = read(3, read_buffer, BUFFER_SIZE);
+	close(3);
 	if (ret == -1) {
 		return -1;
 	}
@@ -148,6 +149,7 @@ func Exec(context *cli.Context) error {
 	}
 
 	read, write, err := util.NewPipe()
+	defer write.Close()
 	if err != nil {
 		return fmt.Errorf("create pipe failed, error:%s\n", err.Error())
 	}

@@ -26,6 +26,7 @@ func Run(c *cli.Context) error  {
 	}
 
 	read, write, err := util.NewPipe()
+	defer write.Close()
 	if err != nil {
 		return err
 	}

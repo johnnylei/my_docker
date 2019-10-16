@@ -31,6 +31,7 @@ func Init(c *cli.Context) error  {
 	}
 
 	reader := os.NewFile(uintptr(3), "pipe")
+	defer reader.Close()
 	_, message, err := util.ReadPipe(reader)
 	if err != nil {
 		return fmt.Errorf("read pipe  err: %s", err.Error())
