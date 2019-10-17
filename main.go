@@ -8,17 +8,13 @@ import (
 
 func main() {
 	ipam := network.IPAM{
-		SubnetAllocatedPath: "/tmp/ipam.json",
+		SubnetAllocatedPath: "/Users/leiyuqing02/go/src/github.com/johnnylei/my_docker/ipam.json",
 		Subnets:&map[string]string{},
 	}
 
-	_, ipnet, _ := net.ParseCIDR("172.17.0.0/24")
-	allocatedIpNet, err := ipam.Allocate(ipnet)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Printf("ip address:%s", string(allocatedIpNet.IP))
+
+
+
 }
 
 //func main() {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"path"
 	"strings"
 	"syscall"
 )
@@ -21,16 +22,28 @@ func (ipam *IPAM) dump() error  {
 		return fmt.Errorf("json marshal subnets failed")
 	}
 
-	_, err = os.Stat(ipam.SubnetAllocatedPath)
-	if !os.IsNotExist(err) {
-		return fmt.Errorf("get %s stat faield, error:%s", ipam.SubnetAllocatedPath, err.Error())
-	} else if os.IsNotExist(err) {
-		if err := os.MkdirAll(ipam.SubnetAllocatedPath, 0644); err != nil {
-			return fmt.Errorf("mk file %s failed, error:%s", ipam.SubnetAllocatedPath, err.Error())
+	subnetAllocatedPathDir, _ := path.Split(ipam.SubnetAllocatedPath)
+	_, err = os.Stat(subnetAllocatedPathDir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("get %s stat faield, error:%s", ipam.SubnetAllocatedPath, err.Error())
+		} else {
+			if err := os.MkdirAll(subnetAllocatedPathDir, 0644); err != nil {
+				return fmt.Errorf("mk file %s failed, error:%s", subnetAllocatedPathDir, err.Error())
+			}
 		}
 	}
 
-	err = ioutil.WriteFile(ipam.SubnetAllocatedPath, SubnetsJsonBytes, syscall.O_WRONLY | syscall.O_TRUNC)
+	if _, err = os.Stat(ipam.SubnetAllocatedPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("open %s failed, error:%s", ipam.SubnetAllocatedPath, err.Error())
+	} else if err != nil {
+		_, err := os.Create(ipam.SubnetAllocatedPath)
+		if err != nil {
+			return fmt.Errorf("create %s failed, error:%s", ipam.SubnetAllocatedPath, err.Error())
+		}
+	}
+
+	err = ioutil.WriteFile(ipam.SubnetAllocatedPath, SubnetsJsonBytes, syscall.O_WRONLY | syscall.O_TRUNC | syscall.O_CREAT)
 	if err != nil {
 		return fmt.Errorf("dump subnets failed, write %s failed, error:%s", ipam.SubnetAllocatedPath, err.Error())
 	}
@@ -75,7 +88,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 		(*ipam.Subnets)[subnetString] = string(ipalloc)
 
 		for t := uint(4); t > 0; t-- {
-			ip[t - 4] += uint8(index >> (t - 4) * 8)
+			ip[t - 1] += uint8(index >> ((4 - t) * 8))
 		}
 
 		// 从1开始分配的
@@ -93,7 +106,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 	}, nil
 }
 
-func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr *net.IP) error  {
+func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr net.IP) error  {
 	if err := ipam.load(); err != nil {
 		return fmt.Errorf("Release failed, error:%s", err.Error())
 	}
@@ -117,4 +130,32 @@ func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr *net.IP) error  {
 
 	return nil
 
+}
+
+func TestAllocate()  {
+	ipam := IPAM{
+		SubnetAllocatedPath: "/tmp/ipam.json",
+		Subnets:&map[string]string{},
+	}
+
+	_, ipnet, _ := net.ParseCIDR("172.17.0.0/24")
+	allocatedIpNet, err := ipam.Allocate(ipnet)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("ip address:%v", allocatedIpNet.IP)
+}
+
+func TestRelase()  {
+	ipam := IPAM{
+		SubnetAllocatedPath: "/tmp/ipam.json",
+		Subnets:&map[string]string{},
+	}
+
+	ip, ipnet, _ := net.ParseCIDR("172.17.0.3/24")
+	if err := ipam.Release(ipnet, ip); err != nil {
+		fmt.Println(err)
+		return
+	}
 }
