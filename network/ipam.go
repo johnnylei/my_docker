@@ -41,7 +41,7 @@ func (ipam *IPAM) dump() error  {
 func (ipam *IPAM) load() error  {
 	SubnetsJsonBytes, err := ioutil.ReadFile(ipam.SubnetAllocatedPath)
 	if err != nil {
-		return fmt.Errorf("load failed, read %s failed, error:%s", ipam.SubnetAllocatedPath, err.Error())
+		return nil
 	}
 
 	err = json.Unmarshal(SubnetsJsonBytes, ipam.Subnets)
@@ -49,7 +49,7 @@ func (ipam *IPAM) load() error  {
 		return fmt.Errorf("load failed, json Unmarshal %s failed, error:%s", string(SubnetsJsonBytes), err.Error())
 	}
 
-	return err
+	return nil
 }
 
 func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
