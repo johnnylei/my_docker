@@ -2,22 +2,21 @@ package network
 
 import (
 	"fmt"
+	"github.com/urfave/cli"
 	"github.com/vishvananda/netlink"
 	"net"
 	"os/exec"
 	"strings"
 )
 
-type Bridge struct {
-
-}
+type Bridge struct {}
 
 func (bridge *Bridge) Create(subnet string, name string) (*Network, error)  {
 	ip, ipnet, err := net.ParseCIDR(subnet)
 	if err != nil {
 		return nil, fmt.Errorf("parse %s failed, error:%s", subnet, err.Error())
 	}
-
+	ipnet.IP = ip
 	createdNet := &Network{
 		Name: name,
 		IpRange: ipnet,
@@ -41,7 +40,19 @@ func (bridge *Bridge) initBridgeInterface(network *Network) error {
 		return err
 	}
 
+	if err := bridge.configBridgeInterface(network); err != nil {
+		return err
+	}
 
+	if err := bridge.upBridgeInterface(network); err != nil {
+		return err
+	}
+
+	if err := bridge.configMASQUERADE(network); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (bridge *Bridge) createBridgetInterface(network *Network) error  {
@@ -100,3 +111,24 @@ func (bridge *Bridge) configMASQUERADE(network *Network) error  {
 	return nil
 }
 
+func (bridge *Bridge) Delete(network *Network) error  {
+	bridgeLink, err := netlink.LinkByName(network.Name)
+	if err != nil {
+		return fmt.Errorf("delete bridge %s failed,error:%s", network.Name, err.Error())
+	}
+
+	if err := netlink.LinkDel(bridgeLink); err != nil {
+		return fmt.Errorf("delete bridge %s failed, error:%s", network.Name, err.Error())
+	}
+
+	return nil
+}
+
+func CreateBridgeInterface(context *cli.Context) error {
+	bridge := &Bridge{}
+	if _, err := bridge.Create(context.String("subnet"), context.String("name")); err != nil {
+		return err
+	}
+
+	return nil
+}

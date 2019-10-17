@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/johnnylei/my_docker/container"
 	"github.com/johnnylei/my_docker/image"
+	"github.com/johnnylei/my_docker/network"
 	"github.com/urfave/cli"
 	"log"
 	"os"
@@ -147,6 +148,35 @@ func main() {
 					Name:"ps",
 					Action: func(context *cli.Context)error {
 						return image.Ps(context)
+					},
+				},
+			},
+		},
+		{
+			Name:"network",
+			Usage:"network manager",
+			Subcommands:[]cli.Command{
+				{
+					Name: "driver",
+					Usage: "network driver manger",
+					Subcommands: []cli.Command{
+						{
+							Name:"create",
+							Usage:"mydocker network driver create -name xxx -subnet xxxx",
+							Flags:[]cli.Flag{
+								cli.StringFlag{
+									Name:"name",
+									Required:true,
+								},
+								cli.StringFlag{
+									Name:"subnet",
+									Required:true,
+								},
+							},
+							Action: func(context *cli.Context) error {
+								return network.CreateBridgeInterface(context)
+							},
+						},
 					},
 				},
 			},
