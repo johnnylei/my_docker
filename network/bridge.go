@@ -22,7 +22,7 @@ func (bridge *Bridge) Create(subnet string, name string) (*Network, error)  {
 		IpRange: ipnet,
 	}
 
-	if err := bridge.initBridgeInterface(createdNet); err != ni {
+	if err := bridge.initBridgeInterface(createdNet); err != nil {
 		return nil, err
 	}
 
