@@ -14,7 +14,7 @@ func main() {
 
 	_, ipnet, _ := net.ParseCIDR("172.17.0.0/24")
 	allocatedIpNet, _ := ipam.Allocate(ipnet)
-	fmt.Printf("ip address:%v", allocatedIpNet.IP)
+	fmt.Printf("ip address:%s", string(allocatedIpNet.IP))
 }
 
 //func main() {
