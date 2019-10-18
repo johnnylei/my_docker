@@ -18,6 +18,7 @@ import (
 type Bridge struct {
 	Name string `json:"name"`
 	nw *Network `json:"nw"`
+	networkName string `json:"network_name"`
 	Loaded bool
 }
 
@@ -60,6 +61,14 @@ func (bridge *Bridge) load() error  {
 
 	if err := json.Unmarshal(bridgeBytes, bridge); err != nil {
 		return fmt.Errorf("laod failed, json unmarshal failed, error:%s", err.Error())
+	}
+
+	bridge.nw = &Network{
+		Name:bridge.networkName,
+		Loaded: false,
+	}
+	if err := bridge.nw.load();err != nil {
+		return fmt.Errorf("bridge load:%s", err.Error())
 	}
 
 	bridge.Loaded = true
@@ -111,7 +120,7 @@ func (bridge *Bridge) Create(subnet string, name string) error  {
 		Driver: name,
 		DriverType: "bridge",
 	}
-
+	bridge.networkName = bridge.nw.Name
 	bridge.Name = name
 	if err := bridge.initBridgeInterface(); err != nil {
 		return err
