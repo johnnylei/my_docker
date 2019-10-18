@@ -11,6 +11,23 @@ import (
 
 type Bridge struct {}
 
+func (bridge *Bridge) Name() string {
+	return "bridge"
+}
+
+func (bridge *Bridge) Delete(name string) error  {
+	bridgeLink, err := netlink.LinkByName(name)
+	if err != nil {
+		return fmt.Errorf("delete bridge %s failed,error:%s", name, err.Error())
+	}
+
+	if err := netlink.LinkDel(bridgeLink); err != nil {
+		return fmt.Errorf("delete bridge %s failed, error:%s", name, err.Error())
+	}
+
+	return nil
+}
+
 func (bridge *Bridge) Create(subnet string, name string) (*Network, error)  {
 	ip, ipnet, err := net.ParseCIDR(subnet)
 	if err != nil {
@@ -111,22 +128,18 @@ func (bridge *Bridge) configMASQUERADE(network *Network) error  {
 	return nil
 }
 
-func (bridge *Bridge) Delete(network *Network) error  {
-	bridgeLink, err := netlink.LinkByName(network.Name)
-	if err != nil {
-		return fmt.Errorf("delete bridge %s failed,error:%s", network.Name, err.Error())
-	}
-
-	if err := netlink.LinkDel(bridgeLink); err != nil {
-		return fmt.Errorf("delete bridge %s failed, error:%s", network.Name, err.Error())
+func CreateBridgeInterface(context *cli.Context) error {
+	bridge := &Bridge{}
+	if _, err := bridge.Create(context.String("subnet"), context.String("name")); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func CreateBridgeInterface(context *cli.Context) error {
+func DeleteBridgeInterface(context *cli.Context) error  {
 	bridge := &Bridge{}
-	if _, err := bridge.Create(context.String("subnet"), context.String("name")); err != nil {
+	if err := bridge.Delete(context.String("name")); err != nil {
 		return err
 	}
 

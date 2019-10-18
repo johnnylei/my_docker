@@ -177,6 +177,40 @@ func main() {
 								return network.CreateBridgeInterface(context)
 							},
 						},
+						{
+							Name: "delete",
+							Usage: "mydocker network driver delete --name xxx",
+							Flags:[]cli.Flag{
+								cli.StringFlag{
+									Name:"name",
+									Required:true,
+								},
+							},
+							Action: func(context *cli.Context) error {
+								return network.DeleteBridgeInterface(context)
+							},
+						},
+					},
+				},
+				{
+					Name:"create",
+					Usage:"my_docker create --subnet 172.17.0.0/16 --driver xxx --name xxx",
+					Flags:[]cli.Flag{
+						cli.StringFlag{
+							Name:"name",
+							Required:true,
+						},
+						cli.StringFlag{
+							Name:"driver",
+							Required:true,
+						},
+						cli.StringFlag{
+							Name:"subnet",
+							Value:"172.17.0.0/16",
+						},
+					},
+					Action: func(context *cli.Context) error {
+						return network.CreateNetwork(context)
 					},
 				},
 			},

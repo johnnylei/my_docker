@@ -14,6 +14,7 @@ import (
 type IPAM struct {
 	SubnetAllocatedPath string
 	Subnets *map[string]string
+	Loaded bool
 }
 
 func (ipam *IPAM) dump() error  {
@@ -51,7 +52,7 @@ func (ipam *IPAM) dump() error  {
 	return nil
 }
 
-func (ipam *IPAM) load() error  {
+func (ipam *IPAM) Load() error  {
 	SubnetsJsonBytes, err := ioutil.ReadFile(ipam.SubnetAllocatedPath)
 	if err != nil {
 		return nil
@@ -62,12 +63,29 @@ func (ipam *IPAM) load() error  {
 		return fmt.Errorf("load failed, json Unmarshal %s failed, error:%s", string(SubnetsJsonBytes), err.Error())
 	}
 
+	ipam.Loaded = true
 	return nil
 }
 
+func (ipam *IPAM) CheckSubnetAllocated(subnet *net.IPNet) (bool, error)  {
+	if !ipam.Loaded {
+		if err := ipam.Load(); err != nil {
+			return false, fmt.Errorf("CheckSubnetAllocated failed, error:%s", err.Error())
+		}
+	}
+
+	if _, exist := (*ipam.Subnets)[subnet.String()]; exist {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
-	if err := ipam.load(); err != nil {
-		return nil, err
+	if !ipam.Loaded {
+		if err := ipam.Load(); err != nil {
+			return nil, err
+		}
 	}
 
 	ip := subnet.IP
@@ -107,8 +125,10 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 }
 
 func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr net.IP) error  {
-	if err := ipam.load(); err != nil {
-		return fmt.Errorf("Release failed, error:%s", err.Error())
+	if !ipam.Loaded {
+		if err := ipam.Load(); err != nil {
+			return fmt.Errorf("Release failed, error:%s", err.Error())
+		}
 	}
 
 	releaseIp := ipaddr.To4()
