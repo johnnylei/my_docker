@@ -105,7 +105,7 @@ func (bridge *Bridge) Create(subnet string, name string) error  {
 		return fmt.Errorf("parse %s failed, error:%s", subnet, err.Error())
 	}
 	ipnet.IP = ip
-	createdNet := &Network{
+	bridge.nw = &Network{
 		Name: name,
 		IpRange: ipnet,
 		Driver: name,
@@ -113,7 +113,6 @@ func (bridge *Bridge) Create(subnet string, name string) error  {
 	}
 
 	bridge.Name = name
-	bridge.nw = createdNet
 	if err := bridge.initBridgeInterface(); err != nil {
 		return err
 	}
