@@ -62,7 +62,7 @@ func (nw *Network) dump() error  {
 		}
 	}
 
-	dumpPath := path.Join(common.NETWORK_INFORMATION_DIRECTORY, nw.Name, ".json")
+	dumpPath := path.Join(common.NETWORK_INFORMATION_DIRECTORY, nw.Name + ".json")
 	if _, err := os.Stat(dumpPath); err != nil {
 		if _, err := os.Create(dumpPath); err != nil {
 			return fmt.Errorf("create %s failed, error %s", dumpPath, err.Error())
@@ -82,7 +82,7 @@ func (nw *Network) dump() error  {
 }
 
 func (nw *Network) load() error  {
-	dumpPath := path.Join(common.NETWORK_INFORMATION_DIRECTORY, nw.Name, ".json")
+	dumpPath := path.Join(common.NETWORK_INFORMATION_DIRECTORY, nw.Name + ".json")
 	contentBytes, err := ioutil.ReadFile(dumpPath)
 	if err != nil {
 		return fmt.Errorf("read %s failed, error:%s", dumpPath, err.Error())
