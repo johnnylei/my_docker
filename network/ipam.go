@@ -3,12 +3,20 @@ package network
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/johnnylei/my_docker/common"
 	"io/ioutil"
 	"net"
 	"os"
 	"path"
 	"strings"
 	"syscall"
+)
+
+var (
+	ipam = &IPAM{
+		SubnetAllocatedPath:common.IPAM_ALLOCAT_SUBNET_DUMP_PATH,
+		Loaded:false,
+	}
 )
 
 type IPAM struct {

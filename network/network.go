@@ -36,9 +36,6 @@ func CreateNetwork(context *cli.Context) error  {
 		return fmt.Errorf("parse network %s failed, error:%s", SubnetString, err.Error())
 	}
 
-	ipam := &IPAM{
-		SubnetAllocatedPath:common.IPAM_ALLOCAT_SUBNET_DUMP_PATH,
-	}
 	allocated, err := ipam.CheckSubnetAllocated(ipnet)
 	if err != nil {
 		return err
