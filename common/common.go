@@ -20,5 +20,6 @@ var (
 
 	NETWORK_INFORMATION_DIRECTORY = path.Join(DefaultContainerInformationLocation, "network")
 	IPAM_ALLOCAT_SUBNET_DUMP_PATH = path.Join(NETWORK_INFORMATION_DIRECTORY, "ipam.json")
+	NETWORK_DRIVER_DIRECTORY = path.Join(NETWORK_INFORMATION_DIRECTORY, "driver")
 )
 

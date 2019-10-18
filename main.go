@@ -201,7 +201,7 @@ func main() {
 							Required:true,
 						},
 						cli.StringFlag{
-							Name:"driver",
+							Name:"driver-type",
 							Required:true,
 						},
 						cli.StringFlag{
@@ -211,6 +211,19 @@ func main() {
 					},
 					Action: func(context *cli.Context) error {
 						return network.CreateNetwork(context)
+					},
+				},
+				{
+					Name:"delete",
+					Usage:"my_docker delete --name xxx",
+					Flags:[]cli.Flag{
+						cli.StringFlag{
+							Name:"name",
+							Required:true,
+						},
+					},
+					Action: func(context *cli.Context) error {
+						return network.DeleteNetwork(context)
 					},
 				},
 			},

@@ -1,7 +1,7 @@
 package network
 
 type Driver interface {
-	Name() string
-	Create(string, string) (*Network, error)
+	Create(string, string) error
 	Delete(string) error
+	GetNetwork() *Network
 }

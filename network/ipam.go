@@ -90,6 +90,25 @@ func (ipam *IPAM) CheckSubnetAllocated(subnet *net.IPNet) (bool, error)  {
 	return false, nil
 }
 
+func (ipam *IPAM) DropSubnet(subnet *net.IPNet) error {
+	if !ipam.Loaded {
+		if err := ipam.Load(); err != nil {
+			return fmt.Errorf("DropSubnet failed, error:%s", err.Error())
+		}
+	}
+
+	if _, exist := (*ipam.Subnets)[subnet.String()]; !exist {
+		return nil
+	}
+
+	delete((*ipam.Subnets), subnet.String())
+	if err := ipam.dump(); err != nil {
+		return fmt.Errorf("DropSubnet failed, message:%s", err.Error())
+	}
+
+	return nil
+}
+
 func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 	if !ipam.Loaded {
 		if err := ipam.Load(); err != nil {
@@ -158,7 +177,6 @@ func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr net.IP) error  {
 	}
 
 	return nil
-
 }
 
 func TestAllocate()  {

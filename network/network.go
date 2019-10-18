@@ -14,7 +14,9 @@ import (
 
 var (
 	drivers = map[string]Driver {
-		"bridge": &Bridge{},
+		"bridge": &Bridge{
+			Loaded: false,
+		},
 	}
 )
 
@@ -22,6 +24,17 @@ type Network struct {
 	Name string `json:"name"`
 	IpRange *net.IPNet `json:"ip_range"`
 	Driver string `json:"driver"`
+	DriverType string `json:"driver_type"`
+	Loaded bool
+}
+
+
+func DeleteNetwork(context *cli.Context) error  {
+	nw := &Network{
+		Name: context.String("name"),
+		Loaded: false,
+	}
+	return nw.Delete()
 }
 
 func CreateNetwork(context *cli.Context) error  {
@@ -46,13 +59,13 @@ func CreateNetwork(context *cli.Context) error  {
 	}
 
 	networkName := context.String("name")
-	driverName := context.String("driver")
-	nw, err := drivers[driverName].Create(gateway.String(), networkName)
+	driver := drivers[context.String("driver-type")]
+	err = driver.Create(gateway.String(), networkName)
 	if err != nil {
 		return err
 	}
 
-	return nw.dump()
+	return driver.GetNetwork().dump()
 }
 
 func (nw *Network) dump() error  {
@@ -90,6 +103,26 @@ func (nw *Network) load() error  {
 
 	if err := json.Unmarshal(contentBytes, nw); err != nil {
 		return fmt.Errorf("json Unmarshal failed, error:%s", err.Error())
+	}
+
+	return nil
+}
+
+func (nw *Network) Delete() error  {
+	if !nw.Loaded {
+		if err := nw.load(); err != nil {
+			return fmt.Errorf("DeleteNetwork failed, %s", err.Error())
+		}
+	}
+
+	driver := drivers[nw.DriverType]
+	if err := driver.Delete(nw.Driver); err != nil {
+		return fmt.Errorf("DeleteNetwork failed, %s", err.Error())
+	}
+
+	dumpPath := path.Join(common.NETWORK_INFORMATION_DIRECTORY, nw.Name + ".json")
+	if err := os.Remove(dumpPath); err != nil {
+		return fmt.Errorf("delete %s failed, error:%s", dumpPath, err.Error())
 	}
 
 	return nil
