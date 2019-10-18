@@ -100,7 +100,7 @@ func (bridge *Bridge) Delete(name string) error  {
 
 	// 删除路由
 	// route del -net 172.17.0.0 netmask 255.255.0.0
-	args = fmt.Sprintf("del -net %s netmask %s", bridge.nw.IpRange.IP.String(), bridge.nw.IpRange.Mask.String())
+	args = fmt.Sprintf("del -net %s netmask %s", bridge.nw.IpRange.IP.String(), MaskToCIDRFormat(bridge.nw.IpRange.Mask))
 	if err := exec.Command("route", strings.Split(args, " ")...).Run(); err != nil {
 		return fmt.Errorf("delete route failed, err:%s", err.Error())
 	}
@@ -233,4 +233,38 @@ func DeleteBridgeInterface(context *cli.Context) error  {
 	}
 
 	return nil
+}
+
+func MaskToCIDRFormat(mask net.IPMask) string {
+	ones, _ := mask.Size()
+	cidr := [4]int{0, 0, 0, 0}
+
+	if ones <= 8 {
+		for i := 0; i < ones; i++ {
+			cidr[0] += 1 << uint8(ones - i)
+		}
+	} else if ones <= 16 {
+		cidr[0] = 255
+		ones -= 8
+		for i := 0; i < ones; i++ {
+			cidr[1] += 1 << uint8(ones - i)
+		}
+	} else if ones <= 24 {
+		cidr[0] = 255
+		cidr[1] = 255
+		ones -= 16
+		for i := 0; i < ones; i++ {
+			cidr[2] += 1 << uint8(ones - i)
+		}
+	} else if ones <= 24 {
+		cidr[0] = 255
+		cidr[1] = 255
+		cidr[2] = 255
+		ones -= 24
+		for i := 0; i < ones; i++ {
+			cidr[3] += 1 << uint8(ones - i)
+		}
+	}
+
+	return fmt.Sprintf("%d.%d.%d.%d", cidr[0], cidr[1], cidr[2], cidr[3])
 }
