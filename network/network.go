@@ -13,15 +13,10 @@ import (
 )
 
 var (
-	drivers = map[string]Driver {}
-)
-
-func Init()  {
-	bridge := &Bridge{}
 	drivers = map[string]Driver {
-		bridge.Name(): bridge,
+		"bridge": &Bridge{},
 	}
-}
+)
 
 type Network struct {
 	Name string `json:"name"`
