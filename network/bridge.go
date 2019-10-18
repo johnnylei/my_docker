@@ -247,14 +247,14 @@ func MaskToCIDRFormat(mask net.IPMask) string {
 		cidr[0] = 255
 		ones -= 8
 		for i := 0; i < ones; i++ {
-			cidr[1] += 1 << uint8(ones - i)
+			cidr[1] += 1 << uint8(7 - i)
 		}
 	} else if ones <= 24 {
 		cidr[0] = 255
 		cidr[1] = 255
 		ones -= 16
 		for i := 0; i < ones; i++ {
-			cidr[2] += 1 << uint8(ones - i)
+			cidr[2] += 1 << uint8(7 - i)
 		}
 	} else if ones <= 24 {
 		cidr[0] = 255
@@ -262,7 +262,7 @@ func MaskToCIDRFormat(mask net.IPMask) string {
 		cidr[2] = 255
 		ones -= 24
 		for i := 0; i < ones; i++ {
-			cidr[3] += 1 << uint8(ones - i)
+			cidr[3] += 1 << uint8(7 - i)
 		}
 	}
 
