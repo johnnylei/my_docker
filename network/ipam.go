@@ -16,6 +16,7 @@ var (
 	ipam = &IPAM{
 		SubnetAllocatedPath:common.IPAM_ALLOCAT_SUBNET_DUMP_PATH,
 		Loaded:false,
+		Subnets:&map[string]string{},
 	}
 )
 
