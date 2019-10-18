@@ -13,12 +13,12 @@ import (
 )
 
 var (
-	drivers = map[string]*Bridge {}
+	drivers = map[string]Driver {}
 )
 
 func Init()  {
 	bridge := &Bridge{}
-	drivers = map[string]*Bridge {
+	drivers = map[string]Driver {
 		bridge.Name(): bridge,
 	}
 }
