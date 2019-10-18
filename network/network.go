@@ -115,6 +115,11 @@ func (nw *Network) Delete() error  {
 		}
 	}
 
+	_, subnet, _ := net.ParseCIDR(nw.IpRange.String())
+	if err := ipam.DropSubnet(subnet); err != nil {
+		return fmt.Errorf("DeleteNetwork failed, %s", err.Error())
+	}
+
 	driver := drivers[nw.DriverType]
 	if err := driver.Delete(nw.Driver); err != nil {
 		return fmt.Errorf("DeleteNetwork failed, %s", err.Error())
