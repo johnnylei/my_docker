@@ -20,9 +20,9 @@ func ConfigVethNetWork(endpoint *Endpoint, containerInfo *common.ContainerInform
 	// defer先调用外层函数,然后往后执行,最后调用里层函数
 	// defer需要先把外层函数解析出来变成一个函数名
 	defer func(peerlink *netlink.Link, containerInfo *common.ContainerInformation) func() {
-		netnsfile, err := os.OpenFile(fmt.Sprintf("/proc/%s/ns/net", containerInfo.Pid), os.O_RDONLY, 0)
+		netnsfile, err := os.OpenFile(fmt.Sprintf("/proc/%d/ns/net", containerInfo.Pid), os.O_RDONLY, 0)
 		if err != nil {
-			log.Fatal(fmt.Sprintf("open /proc/%s/ns/net faild", containerInfo.Pid))
+			log.Fatal(fmt.Sprintf("open /proc/%d/ns/net faild", containerInfo.Pid))
 		}
 
 		netnsFd := netnsfile.Fd()

@@ -203,7 +203,7 @@ func main() {
 				},
 				{
 					Name:"create",
-					Usage:"my_docker create --subnet 172.17.0.0/16 --driver xxx --name xxx",
+					Usage:"my_docker network create --subnet 172.17.0.0/16 --driver-type xxx --name xxx",
 					Flags:[]cli.Flag{
 						cli.StringFlag{
 							Name:"name",
@@ -224,7 +224,7 @@ func main() {
 				},
 				{
 					Name:"delete",
-					Usage:"my_docker delete --name xxx",
+					Usage:"my_docker network delete --name xxx",
 					Flags:[]cli.Flag{
 						cli.StringFlag{
 							Name:"name",
