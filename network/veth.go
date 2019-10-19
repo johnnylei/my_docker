@@ -50,13 +50,14 @@ func ConfigVethNetWork(endpoint *Endpoint, containerInfo *common.ContainerInform
 		}
 	}(&peerlink, containerInfo)()
 
-	if err := ConfigInterfaceNetwork(peerlink, &Network{
+	NW := &Network{
 		IpRange:&net.IPNet{
 			IP: endpoint.IPAddress,
 			Mask: endpoint.NW.IpRange.Mask,
 		},
 		Name:endpoint.NW.Name,
-	}); err != nil {
+	}
+	if err := ConfigInterfaceNetwork(peerlink, NW); err != nil {
 		return fmt.Errorf("configVethNetWork failed, link %s config network failed, error:%s",
 			endpoint.Device.PeerName, err.Error())
 	}
