@@ -3,6 +3,7 @@ package network
 import (
 	"fmt"
 	"github.com/vishvananda/netlink"
+	"net"
 	"os/exec"
 	"strings"
 )
@@ -44,7 +45,11 @@ func ConfigInterfaceNetworkByName(name string, NW *Network) error  {
 }
 
 func ConfigInterfaceNetwork(link netlink.Link, NW *Network) error  {
-	addr, err := netlink.ParseAddr(NW.IpRange.String())
+	return ConfigInterfaceNetworkFromSubnetString(link, NW.IpRange.String())
+}
+
+func ConfigInterfaceNetworkFromSubnetString(link netlink.Link, subnet string) error  {
+	addr, err := netlink.ParseAddr(subnet)
 	if err != nil {
 		return fmt.Errorf("parse %s failed; error:%s", NW.IpRange.String(), err.Error())
 	}
