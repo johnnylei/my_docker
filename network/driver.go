@@ -28,7 +28,7 @@ func SetInterfaceUpByName(name string) error  {
 
 func SetInterfaceUp(link netlink.Link) error  {
 	if err := netlink.LinkSetUp(link); err != nil {
-		return fmt.Errorf("up %s failed, error:%s", name, err.Error())
+		return fmt.Errorf("up %s failed, error:%s", link.Attrs().Name, err.Error())
 	}
 
 	return nil
