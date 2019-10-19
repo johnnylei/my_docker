@@ -3,6 +3,7 @@ package container
 import (
 	"fmt"
 	"github.com/johnnylei/my_docker/common"
+	"github.com/johnnylei/my_docker/network"
 	"github.com/johnnylei/my_docker/subsystem"
 	"github.com/johnnylei/my_docker/util"
 	"github.com/urfave/cli"
@@ -78,16 +79,23 @@ func Run(c *cli.Context) error  {
 		InitCommand: containerInitCommand,
 		Status: common.STATUS_RUNING,
 		CreatedTime: time.Now().Format("2006-01-02 15:04:05"),
+		PortMapping: c.StringSlice("p"),
 	}
 	if containerInformation.CheckExist() {
 		return fmt.Errorf("contianer %s is exist", containerInformation.Name)
 	}
+
 	if err := containerInformation.Record(); err != nil {
 		return err
 	}
+
 	imageObject := common.InitImage(c.String("image"))
 	imageObject.AppendContainer(containerInformation)
 	if err := imageObject.Record(); err != nil {
+		return err
+	}
+
+	if err := network.Connect(c, containerInformation); err != nil {
 		return err
 	}
 

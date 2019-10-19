@@ -17,8 +17,12 @@ import (
 
 type Bridge struct {
 	Name string `json:"name"`
-	nw *Network `json:"nw"`
+	nw *Network
 	Loaded bool
+}
+
+func (bridge *Bridge) GetName() string  {
+	return bridge.Name
 }
 
 func (bridge *Bridge) GetNetwork() *Network  {
@@ -107,6 +111,31 @@ func (bridge *Bridge) Delete(name string) error  {
 	return nil
 }
 
+func (bridge *Bridge) Connect(NW *Network, endpoint *Endpoint) error  {
+	bridgeLink, err := netlink.LinkByName(NW.Name)
+	if err != nil {
+		return fmt.Errorf("connect nw enpoint failed, error:%s", err.Error())
+	}
+
+	la := netlink.NewLinkAttrs()
+	la.MasterIndex = bridgeLink.Attrs().Index
+	la.Name = endpoint.ID[:5]
+	endpoint.Device = netlink.Veth{
+		LinkAttrs:la,
+		PeerName: "cif-"+endpoint.ID[:5],
+	}
+	if err := netlink.LinkAdd(&endpoint.Device); err != nil {
+		return fmt.Errorf("create veth %s failed, error:%s", endpoint.Device.Name, err.Error())
+	}
+
+	if err := netlink.LinkSetUp(&endpoint.Device); err != nil {
+		netlink.LinkDel(&endpoint.Device)
+		return fmt.Errorf("link %s set up failed, error:%s", endpoint.Device.Name, err.Error())
+	}
+
+	return nil
+}
+
 func (bridge *Bridge) Create(subnet string, name string) error  {
 	ip, ipnet, err := net.ParseCIDR(subnet)
 	if err != nil {
@@ -142,15 +171,15 @@ func (bridge *Bridge) initBridgeInterface() error {
 		return err
 	}
 
-	if err := bridge.configBridgeInterface(); err != nil {
+	if err := ConfigInterfaceNetworkByName(bridge.Name, bridge.nw); err != nil {
 		return err
 	}
 
-	if err := bridge.upBridgeInterface(); err != nil {
+	if err := SetInterfaceUpByName(bridge.Name); err != nil {
 		return err
 	}
 
-	if err := bridge.configMASQUERADE(); err != nil {
+	if err := ConfigMASQUERADE(bridge.nw); err != nil {
 		return err
 	}
 
@@ -167,47 +196,6 @@ func (bridge *Bridge) createBridgetInterface() error  {
 	la.Name = bridge.nw.Name
 	if err := netlink.LinkAdd(&netlink.Bridge{LinkAttrs: la}); err != nil {
 		return fmt.Errorf("add bridge %s failed, error:%s", la.Name, err.Error())
-	}
-
-	return nil
-}
-
-func (bridge *Bridge) configBridgeInterface() error  {
-	bridgeLink, err := netlink.LinkByName(bridge.nw.Name)
-	if err != nil {
-		return fmt.Errorf("link %s failed, error: %s", bridge.nw.Name, err.Error())
-	}
-
-	addr, err := netlink.ParseAddr(bridge.nw.IpRange.String())
-	if err != nil {
-		return fmt.Errorf("parse %s failed; error:%s", bridge.nw.IpRange.String(), err.Error())
-	}
-
-	if err := netlink.AddrAdd(bridgeLink, addr); err != nil {
-		return fmt.Errorf("config %s to link %s failed, error:%s", addr.String(), bridge.nw.Name, err.Error())
-	}
-
-	return nil
-}
-
-func (bridge *Bridge) upBridgeInterface() error  {
-	bridgeLink, err := netlink.LinkByName(bridge.nw.Name)
-	if err != nil {
-		return fmt.Errorf("link %s failed, error: %s", bridge.nw.Name, err.Error())
-	}
-	if err := netlink.LinkSetUp(bridgeLink); err != nil {
-		return fmt.Errorf("link %s set up failed, error:%s", bridge.nw.Name, err.Error())
-	}
-
-	return nil
-}
-
-// iptables -t nat -A POSTROUTING -o br0 -j MASQUERADE -s xxx.xxx.xx.xx
-func (bridge *Bridge) configMASQUERADE() error  {
-	args := fmt.Sprintf("-t nat -A POSTROUTING -o %s -j MASQUERADE -s %s", bridge.nw.Name, bridge.nw.IpRange.String())
-	cmd := exec.Command("iptables", strings.Split(args, " ")...)
-	if output, err := cmd.Output(); err != nil {
-		return fmt.Errorf("configMASQUERADE failed:%v; error:%s", output, err.Error())
 	}
 
 	return nil

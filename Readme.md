@@ -1,7 +1,7 @@
 ## 环境
 - ubuntu 14.04
 - kernel 3.13.x
-- go 1.71.1
+- go 1.12
 
 ### kernel降级
 ubuntu 14.04卸载kernel4.04安装3.13.0.83-generic,由于默认安装的kernel是4.4, 而实验环境要求3.13.x

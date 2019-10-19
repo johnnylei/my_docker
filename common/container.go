@@ -35,6 +35,7 @@ type ContainerInformation struct {
 	Status string `json:"status"`
 	CreatedTime string `json:"created_time"`
 	Path string
+	PortMapping []string `json:"port_mapping"`
 }
 
 func (information *ContainerInformation) GetPath() string  {

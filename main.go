@@ -33,6 +33,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name: "name",
+					Required:true,
 				},
 				cli.StringSliceFlag{
 					Name: "env",
@@ -45,6 +46,14 @@ func main() {
 				cli.StringFlag{
 					Name: "v",
 					Usage: "volume mount",
+				},
+				cli.StringFlag{
+					Name: "net",
+					Value: "mydocker0",
+				},
+				cli.StringSliceFlag{
+					Name: "p",
+					Usage: "port map",
 				},
 			},
 			Action: func(c *cli.Context) error {

@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"github.com/johnnylei/my_docker/common"
 	"github.com/urfave/cli"
+	"github.com/vishvananda/netlink"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
+	"os/exec"
 	"path"
+	"strings"
 	"syscall"
 )
 
@@ -132,3 +136,60 @@ func (nw *Network) Delete() error  {
 
 	return nil
 }
+
+func Connect(context *cli.Context, containerInfo *common.ContainerInformation) error  {
+	nw := &Network{
+		Name: context.String("net"),
+		Loaded: false,
+	}
+
+	if err := nw.load(); err != nil {
+		return fmt.Errorf("connect failed, %s", err.Error())
+	}
+
+	ip, err := ipam.Allocate(nw.IpRange)
+	if err != nil {
+		return fmt.Errorf("connect failed, %s", err.Error())
+	}
+
+	endpoint := &Endpoint{
+		ID: fmt.Sprintf("%s-%s", containerInfo.Id, nw.Name),
+		IPAddress: ip.IP,
+		NW: nw,
+		PortMapping: containerInfo.PortMapping,
+	}
+	driver := drivers[nw.DriverType]
+	if err := driver.Connect(nw, endpoint); err != nil {
+		ipam.DropSubnet(nw.IpRange)
+		return fmt.Errorf("driver %s connect nw to endpoint failed, error:%s", driver.GetName(), err.Error())
+	}
+
+	if err := ConfigVethNetWork(endpoint, containerInfo); err != nil {
+		netlink.LinkDel(&endpoint.Device)
+		ipam.DropSubnet(nw.IpRange)
+		return fmt.Errorf("configVethNetWork failed, error:%s", err.Error())
+	}
+
+	ConfigPortMapping(endpoint)
+
+	return nil
+}
+
+func ConfigPortMapping(endpoint *Endpoint) {
+	for _, portMappingItem := range endpoint.PortMapping {
+		portMapping := strings.Split(portMappingItem, ":")
+		if len(portMapping) != 2 {
+			log.Printf("port mapping usage: sourcePort:DestinationPort")
+			continue
+		}
+
+		// iptables -t nat -A POSTROUTING -i eth0 -j DNAT -p tcp --dport 80 --to-destionation xxx.xx.xxx.xx:xxx-xxx.xxx.xxx.xxx:xxx
+		args := fmt.Sprintf("-t nat -A PREROUTING -i %s -j DNAT -p tcp --dport %s --to-destination %s:%s",
+			endpoint.NW.Name, portMapping[0], endpoint.IPAddress, portMapping[1])
+		if output, err := exec.Command("iptables", strings.Split(args, " ")...).Output(); err != nil {
+			log.Printf("DNAT failed, iptables %s, output:%s, error:%s", args, string(output), err.Error())
+			continue
+		}
+	}
+}
+
