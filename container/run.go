@@ -92,10 +92,12 @@ func Run(c *cli.Context) error  {
 	imageObject := common.InitImage(c.String("image"))
 	imageObject.AppendContainer(containerInformation)
 	if err := imageObject.Record(); err != nil {
+		containerInformation.Destroy()
 		return err
 	}
 
 	if err := network.Connect(c, containerInformation); err != nil {
+		containerInformation.Destroy()
 		return err
 	}
 

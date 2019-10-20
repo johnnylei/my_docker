@@ -101,6 +101,14 @@ func (information *ContainerInformation) Destroy() error  {
 		return fmt.Errorf("remove information file %s failed; error:%s", informationFile, err.Error())
 	}
 
+	// umount
+	mountPath := path.Join(CONTAINER_FILE_SYSTEM_MOUNT_ROOT, information.Name)
+	exec.Command("umount", mountPath).Run()
+
+	// delete
+	containerPath := path.Join(CONTAINER_FILE_SYSTEM_ROOT, information.Name)
+	exec.Command("rm", "-rf", containerPath).Run()
+
 	return nil
 }
 
