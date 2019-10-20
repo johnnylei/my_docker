@@ -155,7 +155,7 @@ func Connect(context *cli.Context, containerInfo *common.ContainerInformation) e
 
 	endpoint := &Endpoint{
 		ID: fmt.Sprintf("%s-%s", containerInfo.Id, nw.Name),
-		IPAddress: ip.IP,
+		IPAddress: ip,
 		NW: nw,
 		PortMapping: containerInfo.PortMapping,
 	}
