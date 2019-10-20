@@ -122,7 +122,11 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (net.IP, error)  {
 		(*ipam.Subnets)[subnetString] = strings.Repeat("0", 1 << uint8(netBitLen - maskBitLen))
 	}
 
-	ip := subnet.IP
+	ip := net.IP{}
+	if err := common.Clone(subnet.IP, ip); err != nil {
+		return nil, fmt.Errorf("ipam 127, allocate failed while clone, %s", err.Error())
+	}
+
 	for  index, value := range (*ipam.Subnets)[subnetString] {
 		if value == '1' {
 			continue
@@ -138,7 +142,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (net.IP, error)  {
 		}
 
 		// 从1开始分配的
-		ip[3] += 1
+		(ip.To4())[3] += 1
 		break
 	}
 
