@@ -109,24 +109,20 @@ func (ipam *IPAM) DropSubnet(subnet *net.IPNet) error {
 	return nil
 }
 
-func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
+func (ipam *IPAM) Allocate(subnet *net.IPNet) (net.IP, error)  {
 	if !ipam.Loaded {
 		if err := ipam.Load(); err != nil {
 			return nil, err
 		}
 	}
 
-	ipnet := &net.IPNet{}
-	if err := common.Clone(subnet, ipnet); err != nil {
-		return nil, fmt.Errorf("allocate failed, %s", err.Error())
-	}
-	fmt.Printf("123 %s\n", ipnet.String())
 	maskBitLen, netBitLen := subnet.Mask.Size()
 	subnetString := subnet.String()
 	if _, exist := (*ipam.Subnets)[subnetString]; !exist {
 		(*ipam.Subnets)[subnetString] = strings.Repeat("0", 1 << uint8(netBitLen - maskBitLen))
 	}
 
+	ip := subnet.IP
 	for  index, value := range (*ipam.Subnets)[subnetString] {
 		if value == '1' {
 			continue
@@ -138,11 +134,11 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 		(*ipam.Subnets)[subnetString] = string(ipalloc)
 
 		for t := uint(4); t > 0; t-- {
-			ipnet.IP[t - 1] += uint8(index >> ((4 - t) * 8))
+			[]byte(ip)[4 - t] += uint8(index >> ((t - 1) * 8))
 		}
 
 		// 从1开始分配的
-		ipnet.IP[3] += 1
+		ip[3] += 1
 		break
 	}
 
@@ -150,8 +146,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 		return nil, fmt.Errorf("allocate ip failed, message:%s", err.Error())
 	}
 
-	fmt.Printf("153 %s\n", ipnet.String())
-	return ipnet, nil
+	return ip, nil
 }
 
 func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr net.IP) error  {
@@ -188,12 +183,12 @@ func TestAllocate()  {
 	}
 
 	_, ipnet, _ := net.ParseCIDR("172.17.0.0/24")
-	allocatedIpNet, err := ipam.Allocate(ipnet)
+	allocatedIp, err := ipam.Allocate(ipnet)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("ip address:%v", allocatedIpNet.IP)
+	fmt.Printf("ip address:%v", allocatedIp)
 }
 
 func TestRelase()  {

@@ -61,10 +61,11 @@ func CreateNetwork(context *cli.Context) error  {
 	if err != nil {
 		return err
 	}
+	ipnet.IP = gateway
 
 	networkName := context.String("name")
 	driver := drivers[context.String("driver-type")]
-	err = driver.Create(gateway.String(), networkName)
+	err = driver.Create(ipnet.String(), networkName)
 	if err != nil {
 		return err
 	}
