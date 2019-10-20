@@ -17,6 +17,11 @@ func ConfigVethNetWork(endpoint *Endpoint, containerInfo *common.ContainerInform
 		return fmt.Errorf("configVethNetWork failed, link %s not found, error:%s", endpoint.Device.PeerName, err.Error())
 	}
 
+	interfaceIp := &net.IPNet{}
+	if err := common.Clone(endpoint.NW.IpRange, interfaceIp); err != nil {
+		return fmt.Errorf("configVethNetWork failed, error:%s", err.Error())
+	}
+
 	// defer先调用外层函数,然后往后执行,最后调用里层函数
 	// defer需要先把外层函数解析出来变成一个函数名
 	defer func(peerlink *netlink.Link, containerInfo *common.ContainerInformation) func() {
@@ -50,9 +55,9 @@ func ConfigVethNetWork(endpoint *Endpoint, containerInfo *common.ContainerInform
 		}
 	}(&peerlink, containerInfo)()
 
-	interfaceIp := *endpoint.NW.IpRange
+	fmt.Printf("55: %s\n", interfaceIp.String())
 	interfaceIp.IP = endpoint.IPAddress
-	fmt.Printf("%s\n", interfaceIp.String())
+	fmt.Printf("55: %s\n", interfaceIp.String())
 	if err := ConfigInterfaceNetworkFromSubnetString(peerlink, interfaceIp.String()); err != nil {
 		return fmt.Errorf("configVethNetWork failed, link %s config network failed, error:%s",
 			endpoint.Device.PeerName, err.Error())

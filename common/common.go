@@ -1,6 +1,10 @@
 package common
 
-import "path"
+import (
+	"encoding/json"
+	"fmt"
+	"path"
+)
 
 var (
 	WORK_SPACE_ROOT string = "/root/my_docker_workspace"
@@ -23,3 +27,15 @@ var (
 	NETWORK_DRIVER_DIRECTORY = path.Join(NETWORK_INFORMATION_DIRECTORY, "driver")
 )
 
+func Clone(source interface{}, clone interface{}) error {
+	sourceBytes, err := json.Marshal(source)
+	if err != nil {
+		return fmt.Errorf("clone failed, Marshal error:%s", err.Error())
+	}
+
+	if err := json.Unmarshal(sourceBytes, clone); err != nil {
+		return fmt.Errorf("clone failed, Unmarshal error:%s", err.Error())
+	}
+
+	return nil
+}
