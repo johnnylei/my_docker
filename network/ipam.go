@@ -109,7 +109,7 @@ func (ipam *IPAM) DropSubnet(subnet *net.IPNet) error {
 	return nil
 }
 
-func (ipam *IPAM) Allocate(subnet *net.IPNet) (net.IP, error)  {
+func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IP, error)  {
 	if !ipam.Loaded {
 		if err := ipam.Load(); err != nil {
 			return nil, err
@@ -192,7 +192,7 @@ func TestAllocate()  {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("ip address:%v", allocatedIp)
+	fmt.Printf("ip address:%v", *allocatedIp)
 }
 
 func TestRelase()  {

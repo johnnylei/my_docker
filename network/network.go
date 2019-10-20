@@ -61,7 +61,7 @@ func CreateNetwork(context *cli.Context) error  {
 	if err != nil {
 		return err
 	}
-	ipnet.IP = gateway
+	ipnet.IP = *gateway
 
 	networkName := context.String("name")
 	driver := drivers[context.String("driver-type")]
@@ -155,7 +155,7 @@ func Connect(context *cli.Context, containerInfo *common.ContainerInformation) e
 
 	endpoint := &Endpoint{
 		ID: fmt.Sprintf("%s-%s", containerInfo.Id, nw.Name),
-		IPAddress: ip,
+		IPAddress: *ip,
 		NW: nw,
 		PortMapping: containerInfo.PortMapping,
 	}
