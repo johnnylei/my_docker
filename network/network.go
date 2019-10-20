@@ -149,7 +149,8 @@ func Connect(context *cli.Context, containerInfo *common.ContainerInformation) e
 		return fmt.Errorf("connect failed, %s", err.Error())
 	}
 
-	ip, err := ipam.Allocate(nw.IpRange)
+	_, ipnet, _ := net.ParseCIDR(nw.IpRange.String())
+	ip, err := ipam.Allocate(ipnet)
 	if err != nil {
 		return fmt.Errorf("connect failed, %s", err.Error())
 	}

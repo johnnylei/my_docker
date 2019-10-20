@@ -16,7 +16,7 @@ var (
 	ipam = &IPAM{
 		SubnetAllocatedPath:common.IPAM_ALLOCAT_SUBNET_DUMP_PATH,
 		Loaded:false,
-		Subnets: make(map[string]string),
+		Subnets: make(map[string]string, 1),
 	}
 )
 
@@ -67,7 +67,7 @@ func (ipam *IPAM) Load() error  {
 		return nil
 	}
 
-	err = json.Unmarshal(SubnetsJsonBytes, ipam.Subnets)
+	err = json.Unmarshal(SubnetsJsonBytes, &ipam.Subnets)
 	if err != nil {
 		return fmt.Errorf("load failed, json Unmarshal %s failed, error:%s", string(SubnetsJsonBytes), err.Error())
 	}
