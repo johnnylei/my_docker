@@ -137,12 +137,13 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IP, error)  {
 		ipalloc[index] = '1'
 		ipam.Subnets[subnetString] = string(ipalloc)
 
+		ipv4 := ip.To4()
 		for t := uint(4); t > 0; t-- {
-			[]byte(*ip)[4 - t] += uint8(index >> ((t - 1) * 8))
+			ipv4[4 - t] += uint8(index >> ((t - 1) * 8))
 		}
 
 		// 从1开始分配的
-		(ip.To4())[3] += 1
+		ipv4[3] += 1
 		break
 	}
 
