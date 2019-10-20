@@ -116,7 +116,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 		}
 	}
 
-	ip := subnet.IP
+	ip := []byte(string(subnet.IP))
 	maskBitLen, netBitLen := subnet.Mask.Size()
 	subnetString := subnet.String()
 	if _, exist := (*ipam.Subnets)[subnetString]; !exist {
@@ -148,7 +148,7 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (*net.IPNet, error)  {
 
 	return &net.IPNet{
 		IP:ip,
-		Mask:subnet.Mask,
+		Mask:[]byte(subnet.Mask),
 	}, nil
 }
 

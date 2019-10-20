@@ -17,8 +17,8 @@ import (
 
 type Bridge struct {
 	Name string `json:"name"`
-	nw *Network
-	Loaded bool
+	Loaded bool `json:"loaded"`
+	NW *Network	`json:"nw"`
 }
 
 func (bridge *Bridge) GetName() string  {
@@ -26,7 +26,7 @@ func (bridge *Bridge) GetName() string  {
 }
 
 func (bridge *Bridge) GetNetwork() *Network  {
-	return bridge.nw
+	return bridge.NW
 }
 
 func (bridge *Bridge) dump() error  {
@@ -66,13 +66,13 @@ func (bridge *Bridge) load() error  {
 		return fmt.Errorf("laod failed, json unmarshal failed, error:%s", err.Error())
 	}
 
-	bridge.nw = &Network{
-		Loaded: false,
-		Name: bridge.Name,
-	}
-	if err := bridge.nw.load();err != nil {
-		return fmt.Errorf("bridge load:%s", err.Error())
-	}
+	//bridge.NW = &Network{
+	//	Loaded: false,
+	//	Name: bridge.Name,
+	//}
+	//if err := bridge.NW.load();err != nil {
+	//	return fmt.Errorf("bridge load:%s", err.Error())
+	//}
 
 	bridge.Loaded = true
 	return nil
@@ -97,14 +97,14 @@ func (bridge *Bridge) Delete(name string) error  {
 
 	// 删除iptables nat规则
 	// iptables -t nat -D POSTROUTING -s 172.17.0.0/16 -o br0 -j MASQUERADE
-	args := fmt.Sprintf("-t nat -D POSTROUTING -s %s -o %s -j MASQUERADE", bridge.nw.IpRange.String(), bridge.Name)
+	args := fmt.Sprintf("-t nat -D POSTROUTING -s %s -o %s -j MASQUERADE", bridge.NW.IpRange.String(), bridge.Name)
 	if err := exec.Command("iptables", strings.Split(args, " ")...).Run(); err != nil {
 		return fmt.Errorf("delete iptables failed, err:%s", err.Error())
 	}
 
 	// 删除路由
 	// route del -net 172.17.0.0 netmask 255.255.0.0
-	args = fmt.Sprintf("del -net %s netmask %s", GetSubnet(bridge.nw.IpRange), MaskToCIDRFormat(bridge.nw.IpRange.Mask))
+	args = fmt.Sprintf("del -net %s netmask %s", GetSubnet(bridge.NW.IpRange), MaskToCIDRFormat(bridge.NW.IpRange.Mask))
 	if err := exec.Command("route", strings.Split(args, " ")...).Run(); err != nil {
 		return fmt.Errorf("delete route failed, route %s; err:%s", args, err.Error())
 	}
@@ -142,7 +142,7 @@ func (bridge *Bridge) Create(subnet string, name string) error  {
 		return fmt.Errorf("parse %s failed, error:%s", subnet, err.Error())
 	}
 	ipnet.IP = ip
-	bridge.nw = &Network{
+	bridge.NW = &Network{
 		Name: name,
 		IpRange: ipnet,
 		Driver: name,
@@ -171,7 +171,7 @@ func (bridge *Bridge) initBridgeInterface() error {
 		return err
 	}
 
-	if err := ConfigInterfaceNetworkByName(bridge.Name, bridge.nw); err != nil {
+	if err := ConfigInterfaceNetworkByName(bridge.Name, bridge.NW); err != nil {
 		return err
 	}
 
@@ -179,7 +179,7 @@ func (bridge *Bridge) initBridgeInterface() error {
 		return err
 	}
 
-	if err := ConfigMASQUERADE(bridge.nw); err != nil {
+	if err := ConfigMASQUERADE(bridge.NW); err != nil {
 		return err
 	}
 
@@ -187,13 +187,13 @@ func (bridge *Bridge) initBridgeInterface() error {
 }
 
 func (bridge *Bridge) createBridgetInterface() error  {
-	device, _ := net.InterfaceByName(bridge.nw.Name)
+	device, _ := net.InterfaceByName(bridge.NW.Name)
 	if device != nil {
-		return fmt.Errorf("interface %s exist", bridge.nw.Name)
+		return fmt.Errorf("interface %s exist", bridge.NW.Name)
 	}
 
 	la := netlink.NewLinkAttrs()
-	la.Name = bridge.nw.Name
+	la.Name = bridge.NW.Name
 	if err := netlink.LinkAdd(&netlink.Bridge{LinkAttrs: la}); err != nil {
 		return fmt.Errorf("add bridge %s failed, error:%s", la.Name, err.Error())
 	}
