@@ -142,6 +142,7 @@ func Connect(context *cli.Context, containerInfo *common.ContainerInformation) e
 	nw := &Network{
 		Name: context.String("net"),
 		Loaded: false,
+		IpRange: &net.IPNet{},
 	}
 
 	if err := nw.load(); err != nil {
