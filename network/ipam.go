@@ -16,13 +16,13 @@ var (
 	ipam = &IPAM{
 		SubnetAllocatedPath:common.IPAM_ALLOCAT_SUBNET_DUMP_PATH,
 		Loaded:false,
-		Subnets:&map[string]string{},
+		Subnets: map[string]string{},
 	}
 )
 
 type IPAM struct {
 	SubnetAllocatedPath string
-	Subnets *map[string]string
+	Subnets map[string]string
 	Loaded bool
 }
 
@@ -83,7 +83,7 @@ func (ipam *IPAM) CheckSubnetAllocated(subnet *net.IPNet) (bool, error)  {
 		}
 	}
 
-	if _, exist := (*ipam.Subnets)[subnet.String()]; exist {
+	if _, exist := ipam.Subnets[subnet.String()]; exist {
 		return true, nil
 	}
 
@@ -97,11 +97,11 @@ func (ipam *IPAM) DropSubnet(subnet *net.IPNet) error {
 		}
 	}
 
-	if _, exist := (*ipam.Subnets)[subnet.String()]; !exist {
+	if _, exist := ipam.Subnets[subnet.String()]; !exist {
 		return nil
 	}
 
-	delete((*ipam.Subnets), subnet.String())
+	delete(ipam.Subnets, subnet.String())
 	if err := ipam.dump(); err != nil {
 		return fmt.Errorf("DropSubnet failed, message:%s", err.Error())
 	}
@@ -118,27 +118,27 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (net.IP, error)  {
 
 	maskBitLen, netBitLen := subnet.Mask.Size()
 	subnetString := subnet.String()
-	if _, exist := (*ipam.Subnets)[subnetString]; !exist {
-		(*ipam.Subnets)[subnetString] = strings.Repeat("0", 1 << uint8(netBitLen - maskBitLen))
+	if _, exist := ipam.Subnets[subnetString]; !exist {
+		ipam.Subnets[subnetString] = strings.Repeat("0", 1 << uint8(netBitLen - maskBitLen))
 	}
 
-	ip := net.IP{}
+	ip := &net.IP{}
 	if err := common.Clone(subnet.IP, ip); err != nil {
 		return nil, fmt.Errorf("ipam 127, allocate failed while clone, %s", err.Error())
 	}
 
-	for  index, value := range (*ipam.Subnets)[subnetString] {
+	for  index, value := range ipam.Subnets[subnetString] {
 		if value == '1' {
 			continue
 		}
 
 		// 将数据更新为已经分配
-		ipalloc := []byte((*ipam.Subnets)[subnetString])
+		ipalloc := []byte(ipam.Subnets[subnetString])
 		ipalloc[index] = '1'
-		(*ipam.Subnets)[subnetString] = string(ipalloc)
+		ipam.Subnets[subnetString] = string(ipalloc)
 
 		for t := uint(4); t > 0; t-- {
-			[]byte(ip)[4 - t] += uint8(index >> ((t - 1) * 8))
+			[]byte(*ip)[4 - t] += uint8(index >> ((t - 1) * 8))
 		}
 
 		// 从1开始分配的
@@ -169,9 +169,9 @@ func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr net.IP) error  {
 	}
 
 
-	ipalloc := []byte((*ipam.Subnets)[subnet.String()])
+	ipalloc := []byte(ipam.Subnets[subnet.String()])
 	ipalloc[index] = '0'
-	(*ipam.Subnets)[subnet.String()] = string(ipalloc)
+	ipam.Subnets[subnet.String()] = string(ipalloc)
 
 	if err := ipam.dump(); err != nil {
 		return fmt.Errorf("relase failed, message:%s", err.Error())
@@ -183,7 +183,7 @@ func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr net.IP) error  {
 func TestAllocate()  {
 	ipam := IPAM{
 		SubnetAllocatedPath: "/tmp/ipam.json",
-		Subnets:&map[string]string{},
+		Subnets:map[string]string{},
 	}
 
 	_, ipnet, _ := net.ParseCIDR("172.17.0.0/24")
@@ -198,7 +198,7 @@ func TestAllocate()  {
 func TestRelase()  {
 	ipam := IPAM{
 		SubnetAllocatedPath: "/tmp/ipam.json",
-		Subnets:&map[string]string{},
+		Subnets:map[string]string{},
 	}
 
 	ip, ipnet, _ := net.ParseCIDR("172.17.0.3/24")
