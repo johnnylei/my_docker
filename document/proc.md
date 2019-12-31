@@ -26,6 +26,8 @@ Linux 内核提供了一种通过 /proc 文件系统，在运行时访问内核�
 /proc/N/statm 进程使用的内核状态
 /proc/N/status 进程的状态信息, 比stat/statm更加具有可读性
 /proc/self 链接到当前正在运行的进程
+
+/proc/filesystem #内核支持的文件系统
 ```
 
 
@@ -35,3 +37,5 @@ Linux 内核提供了一种通过 /proc 文件系统，在运行时访问内核�
 [关于虚拟机的博客](https://segmentfault.com/u/wuyangchun)
 
 [创建并管理cgroup](https://segmentfault.com/a/1190000007241437)
+
+[proc](http://man7.org/linux/man-pages/man5/proc.5.html)

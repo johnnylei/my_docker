@@ -103,3 +103,7 @@ $ cat memory.limit_in_bytes
 $ cat memory.usage_in_bytes
 2273280
 ```
+
+```cassandraql
+$ cat /boot/config-`uname -r`|grep CONFIG_CG #内核配置的subsystem
+```
