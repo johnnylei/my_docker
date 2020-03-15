@@ -1,0 +1,67 @@
+[参考链接](https://zhuanlan.zhihu.com/p/101096040)
+
+### pivot_root new_root put_old
+
+**pivot_root  moves  the  root file system of the current process to the directory put_old and makes new_root the new root file system.  Since pivot_root(8) simply calls pivot_root(2), we
+         refer to the man page of the latter for further details.**
+1. pivot_root 改变当前进程的mount namespace
+2. 将rootfs(/)挂载点挂载的文件，mount到put_old
+3. 将new_root挂载到rootfs(/)
+4. pivot_root 没有修改调用进程的工作目录，通常需要使用chdir("/"),切换到根目录
+> rount mount可以理解为rootfs，也就是“/”，pivot_root将所在mount namespace的“/”改为了new_root
+
+> 注意，pivot_root没有改变当前调用进程的工作目录
+
+>  注意，pivot_root的调用前提需要明确在fork进程时指定mount namespace参数
+
+### 约束条件
+- new_root和put_old都必须是目录
+- new_root和put_old必须在不同mount namespace中
+- put_old必须是new_root的子目录
+- new_root必须是mount point，且不能是当前mount namespace的“/”
+
+````
+// 1. 将root重新在当前mount namespace里面重新mount一遍，是为了『new_root和put_old必须在不同mount namespace中』
+// 2. pivotDir 为root的子目录
+// 3. root 不是/
+// 4. new_root 和 pivotDir都是文件夹
+// 综上符合条件约束
+// 操作步骤
+// 1. 将root重新在当前mount namespace里面重新mount一遍
+// 2. 创建pivotDir
+// 3. pivot_root root pivotDir
+// 4. chDir("/")
+// 5. umount pivotDir # pivot_root不同于chroot, 就是可以umount put_old
+func PivotRoot(root string) error  {
+	if err := syscall.Mount(root, root, "bind", syscall.MS_BIND | syscall.MS_REC, ""); err != nil {
+		return fmt.Errorf("moint bind err: %s", err.Error())
+	}
+
+	pivotDir := filepath.Join(root, ".pivot_root")
+	_, err := os.Stat(pivotDir)
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(pivotDir, 0777); err != nil {
+			return fmt.Errorf("mkdir pivotDir err:%s", err.Error())
+		}
+	}
+
+	if err := syscall.PivotRoot(root, pivotDir); err != nil {
+		return fmt.Errorf("pivot root error: %s", err.Error())
+	}
+
+	if err := os.Chdir("/"); err != nil {
+		return fmt.Errorf("change root error: %s", err.Error())
+	}
+
+	pivotDir = filepath.Join("/", ".pivot_root")
+	if err := syscall.Unmount(pivotDir, syscall.MNT_DETACH); err != nil {
+		return fmt.Errorf("umount %s error: %s", pivotDir, err.Error())
+	}
+
+	if err := os.Remove(pivotDir); err != nil {
+		return fmt.Errorf("remove %s error: %s", pivotDir, err.Error())
+	}
+
+	return nil
+}
+````
