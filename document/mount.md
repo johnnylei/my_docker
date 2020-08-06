@@ -1,6 +1,6 @@
 ```cassandraql
 mount -t type -o options device dir
-# type: 文件系统类型 aufs, proc, memory ...
+# type: 文件系统类型 aufs, proc, memory，cgroup ...
 # options: 挂载选项
 # device(必选): 设备， 有些文件不需要指定具体的设备， 可以随便写一个字符串
 # dir(必选)

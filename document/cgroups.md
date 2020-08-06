@@ -74,7 +74,7 @@ $ cat /proc/$$/cgroup
 
 #### 通过subsystem限制cgroup中的进程的资源
 ```
-# 系统为每个subsystem分配了一个默认的hierarchy, 比如memory的hierarchy
+# 系统为每个subsystem分配了一个默认的hierarchy, 比如memory的hierarchy: /sys/fs/cgroup/memory
 $ mount|grep memory
 # 首先在不作限制的情况下, 使用stress
 $ stress --vm-bytes 200m --vm-keep -m 1
